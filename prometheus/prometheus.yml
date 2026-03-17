@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s # 每 15 秒抓取一次数据
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'cadvisor' # 👈 这里定义我们要抓取 cAdvisor 的数据
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['cadvisor:8080']

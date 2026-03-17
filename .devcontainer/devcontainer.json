@@ -1,0 +1,31 @@
+{
+  "name": "Big Data Polyglot Env",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "dev-runner",
+  "workspaceFolder": "/workspace",
+  
+  // 关键：在容器创建后自动安装 IDE 插件
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "wholroyd.jinja",
+        "scala-lang.scala", 
+        "scalameta.metals", // Scala 智能感知
+        "vscjava.vscode-java-pack"
+      ]
+    },
+    "jetbrains": {
+      "backend": "IntelliJ IDEA Ultimate",
+      // 在这里指定要在容器内自动安装/启用的插件 ID
+      "plugins": [
+        // "Pythonid",       // Python 插件的核心 ID IntelliJ IDEA Ultimate 版本自带
+        "org.intellij.scala" // Scala 插件
+      ]
+    }
+  },
+  
+  "remoteUser": "root",
+  // 解决 M 系列芯片可能的权限问题
+  "runArgs": ["--platform=linux/arm64"] 
+}
