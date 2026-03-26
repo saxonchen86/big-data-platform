@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/flink-risk-engine/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/flink-risk-engine/risk-common/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/flink-risk-engine/risk-connector/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/flink-risk-engine/risk-core/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/flink-risk-engine/risk-algorithm/src/main/resources/archetype-resources" includeSubdirectories="true" />
+    </excludeFromCompile>
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="employee-message-processor" />
+        <module name="datastream" />
+        <module name="risk-common" />
+        <module name="risk-connector" />
+        <module name="kafka2milvus" />
+        <module name="risk-core" />
+        <module name="risk-algorithm" />
+        <module name="realtime-riskcontrol-embedding-job" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>

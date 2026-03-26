@@ -162,7 +162,8 @@ services:
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
       - ./data/etcd:/etcd
-    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    # 修改这里：将 advertise 地址改为容器名 milvus-etcd，并监听所有接口
+    command: etcd -advertise-client-urls=http://milvus-etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
 
   minio:
     container_name: milvus-minio
@@ -181,15 +182,21 @@ services:
 
   milvus:
     container_name: milvus-standalone
-    image: milvusdb/milvus:v2.4.15 
+    image: milvusdb/milvus:v2.4.15
     command: ["milvus", "run", "standalone"]
     security_opt:
       - seccomp:unconfined
     networks:
       - big-data-network
     environment:
-      ETCD_ENDPOINTS: etcd:2379
-      MINIO_ADDRESS: minio:9000
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: milvus-minio:9000
+      # --- 关键修复：强制 Standalone 组件走本地回环 ---
+      # 避免组件向 Etcd 注册不稳定的 Docker IP
+      COMMON_STORAGETYPE: minio
+      # 关键：强制 Proxy 和节点在 Standalone 模式下的行为
+      # 如果还是不行，强制指定地址
+      # MILVUS_ADDRESS: 0.0.0.0:19530
     volumes:
       - ./data/milvus:/var/lib/milvus
     ports:
@@ -201,11 +208,12 @@ services:
 
   attu:
     container_name: milvus-attu
-    image: zilliz/attu:latest
+    image: zilliz/attu:latest # 既然是 2.4.15 的 Milvus，强制用这个稳定的 Attu 版本
     networks:
       - big-data-network
     environment:
-      MILVUS_URL: milvus:19530
+      # 修改这里：指向 milvus 的 container_name
+      MILVUS_URL: milvus-standalone:19530
     ports:
       - "8000:3000"
     depends_on:

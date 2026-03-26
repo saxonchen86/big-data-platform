@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/datastream/employee-message-processor/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/employee-message-processor/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/kafka2milvus/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/kafka2milvus/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/realtime-riskcontrol-embedding-job/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/realtime-riskcontrol-embedding-job/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/risk-algorithm/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/risk-algorithm/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/risk-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/risk-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/risk-connector/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/risk-connector/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/risk-core/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/risk-core/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/flink-risk-engine/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/kafka2milvus/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/kafka2milvus/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>
