@@ -1,33 +1,36 @@
+version: '3.8'
+
 services:
-# --- [开发容器] ---
+  # --- [开发容器] ---
   dev-runner:
     build: 
       context: .devcontainer
       dockerfile: Dockerfile
-    container_name: dev-box           # 域名: dev-box.orb.local
+    container_name: dev-box
     volumes:
       - .:/workspace:cached
       - ~/.ssh:/root/.ssh:ro
     command: sleep infinity
-    network_mode: service:kafka       
+    networks:
+      - big-data-network
 
   # --- 1. Apache Kafka (KRaft模式) ---
   kafka:
     image: apache/kafka:3.7.0
-    # restart: on-failure
     container_name: kafka
     ports:
       - "9092:9092"
       - "9094:9094"
+    networks:
+      - big-data-network
     environment:
       PATH: "/opt/kafka/bin:${PATH}"
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      # 核心修改：定义三套协议
+      # 核心：INTERNAL 供 dofi 和 flink 使用，EXTERNAL 供 Mac 宿主机 IDEA 使用
       KAFKA_LISTENERS: INTERNAL://:29092,EXTERNAL://:9092,CONTROLLER://:9093
-      # 核心修改：内外有别。EXTERNAL 必须给 localhost
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
@@ -50,6 +53,8 @@ services:
     ports:
       - "8081:8081"
     command: jobmanager
+    networks:
+      - big-data-network
     volumes:
       - ./flink-data/checkpoints:/opt/flink/checkpoints
       - ./flink-data/savepoints:/opt/flink/savepoints
@@ -77,11 +82,12 @@ services:
   flink-taskmanager:
     user: root
     image: flink:1.18
-    # restart: on-failure:5
     container_name: flink-taskmanager
     depends_on:
       - flink-jobmanager
     command: taskmanager
+    networks:
+      - big-data-network
     volumes:
       - ./flink-data/checkpoints:/opt/flink/checkpoints
       - ./flink-data/savepoints:/opt/flink/savepoints
@@ -103,6 +109,8 @@ services:
     image: mysql:8.0
     container_name: mysql
     platform: linux/amd64
+    networks:
+      - big-data-network
     environment:
       MYSQL_ROOT_PASSWORD: streampark
       MYSQL_DATABASE: streampark
@@ -124,15 +132,15 @@ services:
     ports:
       - "10000:10000"
     env_file: .env
+    networks:
+      - big-data-network
     environment:
       - FLINK_HOME=/opt/flink
     depends_on:
       - flink-jobmanager
       - kafka
     volumes:
-    # 将容器内 H2 的默认数据目录映射到你 Mac 的本地目录
       - ./data/streampark_h2:/root/streampark/h2-data
-      
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.kube:/root/.kube
       - ./flink-1.18.1:/opt/flink
@@ -141,12 +149,12 @@ services:
       - ~/.m2:/root/.m2
       - ./data/flink_checkpoints:/flink_checkpoints
 
-  # --- [新增] 7. AI 基础设施：向量数据库 (Milvus 及其依赖) ---
-  
-# 7.1 Etcd
+  # --- 7. AI 基础设施 (Milvus) ---
   etcd:
     container_name: milvus-etcd
     image: quay.io/coreos/etcd:v3.5.10
+    networks:
+      - big-data-network
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
       - ETCD_AUTO_COMPACTION_RETENTION=1000
@@ -154,18 +162,13 @@ services:
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
       - ./data/etcd:/etcd
-    # 修正：将 advertise-client-urls 指向服务名 etcd
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
-    healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
 
-  # 7.2 MinIO
   minio:
     container_name: milvus-minio
     image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    networks:
+      - big-data-network
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
@@ -173,51 +176,48 @@ services:
       - "9001:9001"
       - "9000:9000"
     volumes:
-      - ./data/minio:/var/lib/minio/data # 建议用标准路径
-    # 修正：command 启动的路径必须和 volume 挂载路径一致
+      - ./data/minio:/var/lib/minio/data
     command: minio server /var/lib/minio/data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
 
-  # 7.3 Milvus 向量检索引擎核心节点
   milvus:
     container_name: milvus-standalone
     image: milvusdb/milvus:v2.4.15 
     command: ["milvus", "run", "standalone"]
     security_opt:
       - seccomp:unconfined
+    networks:
+      - big-data-network
     environment:
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
     volumes:
-      # 【核心持久化】保证 Milvus 运行时的状态和配置不丢失
       - ./data/milvus:/var/lib/milvus
     ports:
-      - "19530:19530" # 供 Flink 和 dofi 调用
+      - "19530:19530"
       - "9091:9091"
     depends_on:
       - etcd
       - minio
 
-  # 7.4 Attu (Milvus 官方超强可视化管理面板)
   attu:
     container_name: milvus-attu
     image: zilliz/attu:latest
+    networks:
+      - big-data-network
     environment:
       MILVUS_URL: milvus:19530
     ports:
-      - "8000:3000" # 映射到你 Mac 的 8000 端口
+      - "8000:3000"
     depends_on:
       - milvus
 
-  # --- [可视化监测面板] ---
+  # --- 可视化监测 ---
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.0
     container_name: monitoring-cadvisor
     privileged: true
+    networks:
+      - big-data-network
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -229,6 +229,8 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: monitoring-prometheus
+    networks:
+      - big-data-network
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
@@ -239,6 +241,8 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: monitoring-grafana
+    networks:
+      - big-data-network
     ports:
       - "3000:3000"
     environment:
@@ -249,3 +253,7 @@ services:
 volumes:
   kafka_data:
   mysql_data:
+
+networks:
+  big-data-network:
+    external: true
