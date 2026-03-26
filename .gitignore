@@ -1,0 +1,10 @@
+# ==========================================
+# Data & Logs (Local Storage)
+# ==========================================
+# 忽略所有层级下的 data 文件夹
+data/
+# 忽略所有层级下的 flink-data 文件夹
+flink-data/
+flink-1.18.1/
+workspace/
+prometheus/
