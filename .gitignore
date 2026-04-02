@@ -8,3 +8,4 @@ flink-data/
 flink-1.18.1/
 workspace/
 prometheus/
+.env

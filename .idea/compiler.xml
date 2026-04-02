@@ -15,7 +15,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="employee-message-processor" />
-        <module name="datastream" />
         <module name="risk-common" />
         <module name="risk-connector" />
         <module name="kafka2milvus" />
@@ -24,5 +23,8 @@
         <module name="realtime-riskcontrol-embedding-job" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="datastream" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
