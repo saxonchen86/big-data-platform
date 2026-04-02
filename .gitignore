@@ -9,3 +9,9 @@ flink-1.18.1/
 workspace/
 prometheus/
 .env
+
+# 忽略所有 maven 编译输出
+**/target/
+
+# 忽略日志和临时数据
+*.log

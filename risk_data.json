@@ -1,3 +1,0 @@
-{"timestamp": "2026-03-15T13:10:00Z", "user_id": "U-2028-50W", "action": "LOGIN", "location": "Ho Chi Minh, VN", "risk_level": "LOW", "msg": "用户在越南胡志明市常规登录"}
-{"timestamp": "2026-03-15T13:12:00Z", "user_id": "U-2028-50W", "action": "WITHDRAW", "amount": 99999, "currency": "USDT", "risk_level": "CRITICAL", "msg": "警告：检测到该账户正在尝试一笔接近十万美金的巨额 USDT 提现，触发反洗钱 A-001 规则！"}
-{"timestamp": "2026-03-15T13:14:30Z", "user_id": "U-2028-50W", "action": "LOGOUT", "location": "Unknown", "risk_level": "MEDIUM", "msg": "用户在提现操作后强制登出，IP 轨迹异常。"}

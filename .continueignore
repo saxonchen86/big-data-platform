@@ -1,0 +1,38 @@
+# 排除构建产物
+target/
+build/
+out/
+dist/
+
+# 排除依赖源码包 (非常重要)
+# 比如 Maven 或 Gradle 下载的本地源码缓存
+.gradle/
+.m2/
+vendor/
+node_modules/
+
+# 排除 IDE 配置文件
+.idea/
+*.iml
+.vscode/
+
+# 排除大数据运行产生的临时文件和日志
+*.log
+temp/
+tmp/
+.flink/
+checkpoint/
+
+# 排除二进制文件和压缩包
+*.jar
+*.zip
+*.tar.gz
+*.parquet
+*.avro
+
+# 排除 Python 虚拟环境 (如果你在写 dofi agent)
+venv/
+.env/
+__pycache__/
+
+flink-1.18.1/
