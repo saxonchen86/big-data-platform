@@ -1,7 +1,7 @@
 package com.bigdata.datastream.app;
 
-import com.expert.datastream.func.OllamaAsyncEmbeddingFunction;
-import com.expert.datastream.func.VectorDatabaseSink;
+import com.bigdata.datastream.func.OllamaAsyncEmbeddingFunction;
+import com.bigdata.datastream.func.VectorDatabaseSink;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
