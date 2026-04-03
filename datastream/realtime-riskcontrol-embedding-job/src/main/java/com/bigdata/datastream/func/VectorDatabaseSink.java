@@ -1,4 +1,4 @@
-package com.expert.bigdata.func;
+package com.bigdata.datastream.func;
 
 
 import com.alibaba.fastjson.JSONObject;

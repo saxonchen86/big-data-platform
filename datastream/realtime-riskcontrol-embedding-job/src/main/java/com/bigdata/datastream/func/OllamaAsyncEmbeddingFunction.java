@@ -1,17 +1,12 @@
-package com.expert.bigdata.func;
+package com.bigdata.datastream.func;
 
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.milvus.v2.client.ConnectConfig;
-import io.milvus.v2.client.MilvusClientV2;
-import io.milvus.v2.service.vector.request.InsertReq;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
-import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 
 import java.net.URI;
 import java.net.http.HttpClient;

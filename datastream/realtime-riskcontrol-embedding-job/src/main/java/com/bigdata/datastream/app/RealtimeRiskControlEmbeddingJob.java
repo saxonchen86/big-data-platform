@@ -1,32 +1,16 @@
-package com.expert.bigdata.app;
+package com.bigdata.datastream.app;
 
-import com.alibaba.fastjson.JSONObject;
-import com.expert.bigdata.func.OllamaAsyncEmbeddingFunction;
-import com.expert.bigdata.func.VectorDatabaseSink;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.milvus.v2.client.ConnectConfig;
-import io.milvus.v2.client.MilvusClientV2;
-import io.milvus.v2.service.vector.request.InsertReq;
+import com.expert.datastream.func.OllamaAsyncEmbeddingFunction;
+import com.expert.datastream.func.VectorDatabaseSink;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.async.ResultFuture;
-import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
-import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class RealtimeRiskControlEmbeddingJob {

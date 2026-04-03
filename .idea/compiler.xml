@@ -16,6 +16,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="employee-message-processor" />
         <module name="risk-common" />
+        <module name="common" />
         <module name="risk-connector" />
         <module name="kafka2milvus" />
         <module name="risk-core" />

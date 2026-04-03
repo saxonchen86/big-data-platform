@@ -31,6 +31,7 @@ under the License.
         <module>datastream/realtime-riskcontrol-embedding-job</module>
         <module>datastream/kafka2milvus</module>
         <module>datastream/employee-message-processor</module>
+        <module>common</module>
     </modules>
 
     <properties>
@@ -140,6 +141,33 @@ under the License.
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-planner_2.12</artifactId>
+            <version>1.18.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-json</artifactId>
+            <version>1.18.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-jdbc</artifactId>
+            <version>3.1.2-1.18</version> <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
+            <scope>provided</scope>
+        </dependency>
+
 	</dependencies>
 
 	<build>
@@ -194,7 +222,7 @@ under the License.
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.expert.bigdata.DataStreamJob</mainClass>
+									<mainClass>com.expert.datastream.DataStreamJob</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
