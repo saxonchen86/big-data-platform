@@ -14,11 +14,14 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="employee-message-processor" />
         <module name="risk-common" />
         <module name="common" />
         <module name="risk-connector" />
+        <module name="kafka2milvus" />
         <module name="risk-core" />
         <module name="risk-algorithm" />
+        <module name="realtime-riskcontrol-embedding-job" />
       </profile>
     </annotationProcessing>
   </component>
