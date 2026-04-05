@@ -156,7 +156,8 @@ under the License.
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-jdbc</artifactId>
-            <version>3.1.2-1.18</version> <scope>provided</scope>
+            <version>3.1.2-1.18</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -207,12 +208,6 @@ under the License.
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.apache.flink:*</exclude>
-                                    <exclude>org.scala-lang:*</exclude>
-                                </excludes>
-                            </artifactSet>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
