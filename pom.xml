@@ -21,16 +21,13 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.expert.bigdata</groupId>
-	<artifactId>flink-scaling-up</artifactId>
+	<artifactId>bigdata</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Flink Quickstart Job</name>
     <modules>
         <module>datastream</module>
-        <module>datastream/realtime-riskcontrol-embedding-job</module>
-        <module>datastream/kafka2milvus</module>
-        <module>datastream/employee-message-processor</module>
         <module>common</module>
     </modules>
 
@@ -222,7 +219,7 @@ under the License.
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.expert.datastream.DataStreamJob</mainClass>
+									<mainClass>com.bigdata.datastream.DataStreamJob</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

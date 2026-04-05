@@ -10,7 +10,7 @@ public class MyParameter {
     private String dbPassword;
     private String sourceTopic;
     private String sinkTopic;
-    private String sinktableName;
+    private String sinkTablename;
 
     public MyParameter(ParameterTool parameterTool) {
         this.kafkaBootstrapServers = parameterTool.get("kafka.bootstrap.servers", "localhost:9092");
@@ -19,7 +19,7 @@ public class MyParameter {
         this.dbPassword = parameterTool.get("dbPassword", "streampark");
         this.sourceTopic = parameterTool.get("sourceTopic", "topic1");
         this.sinkTopic = parameterTool.get("sinkTopic", "topic2");
-        this.sinktableName = parameterTool.get("sinktableName");
+        this.sinkTablename = parameterTool.get("sinkTablename");
     }
 
     // Getter methods
@@ -47,8 +47,8 @@ public class MyParameter {
         return sinkTopic;
     }
 
-    public String getSinktableName() {
-        return sinktableName;
+    public String getSinkTablename() {
+        return sinkTablename;
     }
 
     // Setter methods
@@ -76,7 +76,7 @@ public class MyParameter {
         this.sinkTopic = sinkTopic;
     }
 
-    public void setSinktableName(String sinktableName) {
-        this.sinktableName = sinktableName;
+    public void setSinkTablename(String sinkTablename) {
+        this.sinkTablename = sinkTablename;
     }
 }

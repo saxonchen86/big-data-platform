@@ -10,6 +10,7 @@ services:
     volumes:
       - .:/workspace:cached
       - ~/.ssh:/root/.ssh:ro
+      - streampark_maven_repo:/root/.m2  # 挂载到一个独立的卷
     command: sleep infinity
     networks:
       - big-data-network
@@ -92,7 +93,6 @@ services:
       - ./flink-data/checkpoints:/opt/flink/checkpoints
       - ./flink-data/savepoints:/opt/flink/savepoints
       - ./flink-data/usrlib:/opt/flink/usrlib
-    scale: 1
     environment:
       - |
         FLINK_PROPERTIES=
@@ -146,7 +146,7 @@ services:
       - ./flink-1.18.1:/opt/flink
       - ./flink-data/usrlib:/opt/flink/usrlib
       - ./data/streampark_workspace:/streampark/workspace
-      - ~/.m2:/root/.m2
+      - streampark_maven_repo:/root/.m2
       - ./data/flink_checkpoints:/flink_checkpoints
 
   # --- 7. AI 基础设施 (Milvus) ---
@@ -261,6 +261,7 @@ services:
 volumes:
   kafka_data:
   mysql_data:
+  streampark_maven_repo:
 
 networks:
   big-data-network:

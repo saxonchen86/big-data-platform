@@ -7,6 +7,7 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import com.bigdata.common.utils.MyParameter;
 import static org.apache.flink.table.api.Expressions.$;
 
+// --sinkTablename employee_mysql_sink
 public class EmployeeMessageProcessor {
 
     public static void main(String[] args) throws Exception {
@@ -29,7 +30,7 @@ public class EmployeeMessageProcessor {
         String mysqlPassword = myParameter.getDbPassword();
         String employeeTopic1 = myParameter.getSourceTopic();
         String employeeTopic2 = myParameter.getSinkTopic();
-        String mysqlTableName = myParameter.getSinktableName();
+        String mysqlTableName = myParameter.getSinkTablename();
 
         // 创建Kafka source表
         tableEnv.executeSql("""
@@ -45,7 +46,7 @@ public class EmployeeMessageProcessor {
                   'topic' = '%s',
                   'properties.bootstrap.servers' = '%s',
                   'properties.group.id' = 'employee-group',
-                  'scan.startup.mode' = 'latest-offset',
+                  'scan.startup.mode' = 'earliest-offset',
                   'format' = 'json'
                 )
                 """.formatted(employeeTopic1, kafkaBootstrapServers));
@@ -77,8 +78,7 @@ public class EmployeeMessageProcessor {
                   name STRING,
                   department STRING,
                   salary DOUBLE,
-                  message_time TIMESTAMP(3),
-                  PRIMARY KEY (id) NOT ENFORCED
+                  message_time TIMESTAMP(3)
                 ) WITH (
                   'connector' = 'kafka',
                   'topic' = '%s',

@@ -5,11 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.expert.bigdata</groupId>
-        <artifactId>flink-scaling-up</artifactId>
+        <artifactId>bigdata</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>datastream</artifactId>
+    <modules>
+        <module>realtime-riskcontrol-embedding-job</module>
+        <module>kafka2milvus</module>
+        <module>employee-message-processor</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
