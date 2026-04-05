@@ -27,8 +27,8 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="big-data-platform" options="-Xlint:all" />
-      <module name="common" options="-Xlint:all" />
+      <module name="big-data-platform" options="" />
+      <module name="common" options="" />
       <module name="datastream" options="-Xlint:all" />
       <module name="employee-message-processor" options="-Xlint:all" />
       <module name="kafka2milvus" options="-Xlint:all" />
