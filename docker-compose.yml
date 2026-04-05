@@ -7,9 +7,13 @@ services:
       context: .devcontainer
       dockerfile: Dockerfile
     container_name: dev-box
+    environment:
+      - JAVA_HOME=/opt/jdk
+      - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     volumes:
       - .:/workspace:cached
       - ~/.ssh:/root/.ssh:ro
+      - ./libs/jdk:/opt/jdk
       - streampark_maven_repo:/root/.m2  # 挂载到一个独立的卷
     command: sleep infinity
     networks:
@@ -57,6 +61,8 @@ services:
     networks:
       - big-data-network
     volumes:
+      - ./data/streampark_workspace:/streampark/workspace
+      - ./flink-1.18.1/lib:/opt/flink/lib
       - ./flink-data/checkpoints:/opt/flink/checkpoints
       - ./flink-data/savepoints:/opt/flink/savepoints
       - ./flink-data/usrlib:/opt/flink/usrlib
@@ -90,6 +96,8 @@ services:
     networks:
       - big-data-network
     volumes:
+      - ./data/streampark_workspace:/streampark/workspace
+      - ./flink-1.18.1/lib:/opt/flink/lib
       - ./flink-data/checkpoints:/opt/flink/checkpoints
       - ./flink-data/savepoints:/opt/flink/savepoints
       - ./flink-data/usrlib:/opt/flink/usrlib
@@ -108,7 +116,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: mysql
-    platform: linux/amd64
+    platform: linux/arm64
     networks:
       - big-data-network
     environment:
@@ -127,7 +135,7 @@ services:
   streampark:
     user: root
     image: apache/streampark:2.1.6
-    platform: linux/amd64
+    platform: linux/arm64
     container_name: streampark
     ports:
       - "10000:10000"
@@ -136,10 +144,14 @@ services:
       - big-data-network
     environment:
       - FLINK_HOME=/opt/flink
+      - JAVA_HOME=/opt/jdk  # <--- 强制指定这个 Java
+      - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - STREAM_PARK_WORKSPACE=/streampark/workspace
     depends_on:
       - flink-jobmanager
       - kafka
     volumes:
+      - ./libs/jdk:/opt/jdk
       - ./data/streampark_h2:/root/streampark/h2-data
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.kube:/root/.kube
@@ -148,6 +160,7 @@ services:
       - ./data/streampark_workspace:/streampark/workspace
       - streampark_maven_repo:/root/.m2
       - ./data/flink_checkpoints:/flink_checkpoints
+    command: tail -f /dev/null  # <--- 加上这一行，强制容器不退出
 
   # --- 7. AI 基础设施 (Milvus) ---
   etcd:

@@ -1,4 +1,4 @@
-package com.bigdata.datastream.app;
+package com.expert.bigdata.datastream.app;
 
 import com.bigdata.datastream.func.OllamaAsyncEmbeddingFunction;
 import com.bigdata.datastream.func.VectorDatabaseSink;

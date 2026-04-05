@@ -25,7 +25,7 @@ under the License.
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Flink Quickstart Job</name>
+	<name>bigdata</name>
     <modules>
         <module>datastream</module>
         <module>common</module>
@@ -122,7 +122,8 @@ under the License.
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.83</version> </dependency>
+            <version>1.2.83</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -183,49 +184,17 @@ under the License.
 
 			<!-- We use the maven-shade plugin to create a fat jar that contains all necessary dependencies. -->
 			<!-- Change the value of <mainClass>...</mainClass> if your program entry point changes. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.1.1</version>
-				<executions>
-					<!-- Run shade goal on package phase -->
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<createDependencyReducedPom>false</createDependencyReducedPom>
-							<artifactSet>
-								<excludes>
-									<exclude>org.apache.flink:flink-shaded-force-shading</exclude>
-									<exclude>com.google.code.findbugs:jsr305</exclude>
-									<exclude>org.slf4j:*</exclude>
-									<exclude>org.apache.logging.log4j:*</exclude>
-								</excludes>
-							</artifactSet>
-							<filters>
-								<filter>
-									<!-- Do not copy the signatures in the META-INF folder.
-									Otherwise, this might cause SecurityExceptions when using the JAR. -->
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.bigdata.datastream.DataStreamJob</mainClass>
-								</transformer>
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version> <configuration>
+                <source>17</source>
+                <target>17</target>
+                <compilerArgs>
+                    <arg>-Xlint:all</arg>
+                </compilerArgs>
+            </configuration>
+            </plugin>
 		</plugins>
 
 		<pluginManagement>
