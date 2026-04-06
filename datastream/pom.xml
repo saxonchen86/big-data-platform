@@ -69,6 +69,22 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.protobuf</pattern>
+                                    <shadedPattern>com.expert.bigdata.shaded.protobuf</shadedPattern>
+                                </relocation>
+
+                                <relocation>
+                                    <pattern>io.grpc</pattern>
+                                    <shadedPattern>com.expert.bigdata.shaded.grpc</shadedPattern>
+                                </relocation>
+
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>com.expert.bigdata.shaded.guava</shadedPattern>
+                                </relocation>
+                            </relocations>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 
