@@ -7,7 +7,18 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import com.bigdata.common.utils.MyParameter;
 import static org.apache.flink.table.api.Expressions.$;
 
+// 本地idea运行参数
 // --sinkTablename employee_mysql_sink
+
+// streampark运行参数
+//--kafkaUrl kafka:29092
+//--dbUrl jdbc:mysql://mysql:3306/streampark
+//--dbUsername root
+//--dbPassword streampark
+//--sourceTopic topic1
+//--sinkTopic topic2
+//--sinkTablename employee_mysql_sink
+
 public class EmployeeMessageProcessor {
 
     public static void main(String[] args) throws Exception {
@@ -24,7 +35,7 @@ public class EmployeeMessageProcessor {
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
         // 从参数工具类获取配置
-        String kafkaBootstrapServers = myParameter.getKafkaBootstrapServers();
+        String kafkaBootstrapServers = myParameter.getKafkaUrl();
         String mysqlUrl = myParameter.getDbUrl();
         String mysqlUsername = myParameter.getDbUsername();
         String mysqlPassword = myParameter.getDbPassword();

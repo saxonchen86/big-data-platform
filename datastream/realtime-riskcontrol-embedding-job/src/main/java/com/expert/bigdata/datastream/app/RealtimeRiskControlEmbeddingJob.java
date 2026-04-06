@@ -2,6 +2,7 @@ package com.expert.bigdata.datastream.app;
 
 import com.expert.bigdata.datastream.func.OllamaAsyncEmbeddingFunction;
 import com.expert.bigdata.datastream.func.VectorDatabaseSink;
+import com.bigdata.common.utils.MyParameter;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -13,6 +14,13 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.util.concurrent.TimeUnit;
 
+// --kafkaUrl localhost:29092
+// --sourceTopic risk_control_logs
+// --kafkaGroupId dofi-group-v3
+
+// --kafkaUrl kafka:29092
+// --sourceTopic risk_control_logs
+// --kafkaGroupId dofi-group-v3
 public class RealtimeRiskControlEmbeddingJob {
 
     public static void main(String[] args) throws Exception {
@@ -22,18 +30,21 @@ public class RealtimeRiskControlEmbeddingJob {
         env.getConfig().setGlobalJobParameters(params); // 关键：全局共享参数
         env.enableCheckpointing(5000);
 
-        // 2. Kafka Source (使用外部监听端口 9092)
+        // 2. 使用 MyParameter 工具类解析 Kafka 连接参数
+        MyParameter myParameter = new MyParameter(params);
+
+        // 3. Kafka Source (使用外部监听端口 9092)
         KafkaSource<String> source = KafkaSource.<String>builder()
-                .setBootstrapServers(params.get("kafkaUrl", "localhost:9092"))
-                .setTopics(params.get("kafkaTopics", "risk_control_logs"))
-                .setGroupId(params.get("kafkaGroupId", "dofi-group-v3"))
+                .setBootstrapServers(myParameter.getKafkaUrl())
+                .setTopics(myParameter.getSourceTopic())
+                .setGroupId(myParameter.getKafkaGroupId())
                 .setStartingOffsets(OffsetsInitializer.latest()) // 确保能读到旧数据
                 .setValueOnlyDeserializer(new SimpleStringSchema())
                 .build();
 
         DataStream<String> kafkaStream = env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source");
 
-        // 3. 异步向量化算子
+        // 4. 异步向量化算子
         DataStream<String> embeddedStream = AsyncDataStream.unorderedWait(
                 kafkaStream,
                 new OllamaAsyncEmbeddingFunction(),
@@ -41,10 +52,10 @@ public class RealtimeRiskControlEmbeddingJob {
                 100
         );
 
-        // 4. 写入 Milvus Sink (必须确保 addSink 被正确调用)
+        // 5. 写入 Milvus Sink (必须确保 addSink 被正确调用)
         embeddedStream.addSink(new VectorDatabaseSink()).name("Milvus-Sink");
 
-        // 5. 启动任务
+        // 6. 启动任务
         env.execute("Dofi-Realtime-AI-Pipeline");
     }
 }

@@ -1,6 +1,7 @@
 package com.expert.bigdata.datastream.func;
 
 
+import com.bigdata.common.utils.MyParameter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -23,8 +24,9 @@ public class OllamaAsyncEmbeddingFunction extends RichAsyncFunction<String, Stri
     @Override
     public void open(Configuration parameters) {
         ParameterTool params = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+        MyParameter myParameter = new MyParameter(params);
         // 自动识别环境：本地跑用 localhost，容器跑传参数 --ollama.host host.docker.internal
-        String host = params.get("ollamaHost", "localhost");
+        String host = myParameter.getOllamaHost();
         this.ollamaUrl = "http://" + host + ":11434/api/embeddings";
 
         this.client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();

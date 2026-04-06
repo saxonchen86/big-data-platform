@@ -2,29 +2,36 @@ package com.bigdata.common.utils;
 
 import org.apache.flink.api.java.utils.ParameterTool;
 
+
 public class MyParameter {
 
-    private String kafkaBootstrapServers;
+    private String kafkaUrl;
     private String dbUrl;
     private String dbUsername;
     private String dbPassword;
     private String sourceTopic;
     private String sinkTopic;
     private String sinkTablename;
+    private String kafkaGroupId;
+    private String kafkaTopics;
+    private String ollamaHost;
 
     public MyParameter(ParameterTool parameterTool) {
-        this.kafkaBootstrapServers = parameterTool.get("kafka.bootstrap.servers", "localhost:9092");
+        this.kafkaUrl = parameterTool.get("kafkaUrl", "localhost:9092");
         this.dbUrl = parameterTool.get("dbUrl", "jdbc:mysql://localhost:3306/streampark");
         this.dbUsername = parameterTool.get("dbUsername", "root");
         this.dbPassword = parameterTool.get("dbPassword", "streampark");
         this.sourceTopic = parameterTool.get("sourceTopic", "topic1");
         this.sinkTopic = parameterTool.get("sinkTopic", "topic2");
         this.sinkTablename = parameterTool.get("sinkTablename");
+        this.kafkaGroupId = parameterTool.get("kafkaGroupId", "default-group-id");
+        this.kafkaTopics = parameterTool.get("kafkaTopics", "risk_control_logs");
+        this.ollamaHost = parameterTool.get("ollamaHost", "localhost");
     }
 
     // Getter methods
-    public String getKafkaBootstrapServers() {
-        return kafkaBootstrapServers;
+    public String getKafkaUrl() {
+        return kafkaUrl;
     }
 
     public String getDbUrl() {
@@ -51,9 +58,21 @@ public class MyParameter {
         return sinkTablename;
     }
 
+    public String getKafkaGroupId() {
+        return kafkaGroupId;
+    }
+
+    public String getKafkaTopics() {
+        return kafkaTopics;
+    }
+
+    public String getOllamaHost() {
+        return ollamaHost;
+    }
+
     // Setter methods
-    public void setKafkaBootstrapServers(String kafkaBootstrapServers) {
-        this.kafkaBootstrapServers = kafkaBootstrapServers;
+    public void setKafkaUrl(String kafkaUrl) {
+        this.kafkaUrl = kafkaUrl;
     }
 
     public void setDbUrl(String dbUrl) {
@@ -78,5 +97,17 @@ public class MyParameter {
 
     public void setSinkTablename(String sinkTablename) {
         this.sinkTablename = sinkTablename;
+    }
+
+    public void setKafkaGroupId(String kafkaGroupId) {
+        this.kafkaGroupId = kafkaGroupId;
+    }
+
+    public void setKafkaTopics(String kafkaTopics) {
+        this.kafkaTopics = kafkaTopics;
+    }
+
+    public void setOllamaHost(String ollamaHost) {
+        this.ollamaHost = ollamaHost;
     }
 }
