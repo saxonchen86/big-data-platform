@@ -199,8 +199,8 @@ services:
       - "9001:9001"
       - "9000:9000"
     volumes:
-      - ./data/minio:/var/lib/minio/data
-    command: minio server /var/lib/minio/data --console-address ":9001"
+      - ./data/minio:/data
+    command: server /data --console-address ":9001"
 
   milvus:
     container_name: milvus-standalone
@@ -219,14 +219,21 @@ services:
       # 关键：强制 Proxy 和节点在 Standalone 模式下的行为
       # 如果还是不行，强制指定地址
       # MILVUS_ADDRESS: 0.0.0.0:19530
+      TZ: Asia/Shanghai
     volumes:
       - ./data/milvus:/var/lib/milvus
+      - ./data/logs/milvus:/milvus/logs
     ports:
       - "19530:19530"
       - "9091:9091"
     depends_on:
       - etcd
       - minio
+    deploy:
+      resources:
+        limits:
+          cpus: '8'      # 留 4 个核给系统和 Ollama
+          memory: 16G    # 48G 总内存，给向量库留足空间
 
   attu:
     container_name: milvus-attu

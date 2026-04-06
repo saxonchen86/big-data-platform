@@ -14,13 +14,12 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.util.concurrent.TimeUnit;
 
-// --kafkaUrl localhost:29092
-// --sourceTopic risk_control_logs
-// --kafkaGroupId dofi-group-v3
+// --kafkaUrl localhost:9092  --sourceTopic risk_control_logs  --kafkaGroupId dofi-group-v3
 
 // --kafkaUrl kafka:29092
 // --sourceTopic risk_control_logs
 // --kafkaGroupId dofi-group-v3
+// --ollamaHost host.docker.internal
 public class RealtimeRiskControlEmbeddingJob {
 
     public static void main(String[] args) throws Exception {
@@ -48,7 +47,8 @@ public class RealtimeRiskControlEmbeddingJob {
         DataStream<String> embeddedStream = AsyncDataStream.unorderedWait(
                 kafkaStream,
                 new OllamaAsyncEmbeddingFunction(),
-                10000, TimeUnit.MILLISECONDS,
+                30000L,
+                TimeUnit.MILLISECONDS,
                 100
         );
 
