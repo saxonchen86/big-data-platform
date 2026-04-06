@@ -32,6 +32,7 @@ services:
       PATH: "/opt/kafka/bin:${PATH}"
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
+      CLUSTER_ID: "MKU3OEVBNTcwNTJDRkFDMz"
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       # 核心：INTERNAL 供 dofi 和 flink 使用，EXTERNAL 供 Mac 宿主机 IDEA 使用
@@ -41,6 +42,8 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LOG_FLUSH_INTERVAL_MS: 10000
+        # 关键：指定数据存储路径
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
     deploy:
       resources:
@@ -61,6 +64,7 @@ services:
     networks:
       - big-data-network
     volumes:
+      - ./libs/jdk:/opt/jdk
       - ./data/streampark_workspace:/streampark/workspace
       - ./flink-1.18.1/lib:/opt/flink/lib
       - ./flink-data/checkpoints:/opt/flink/checkpoints
@@ -69,6 +73,8 @@ services:
       - ./data/flink_checkpoints:/flink_checkpoints
       - ./data/flink_uploads:/opt/flink/usr
     environment:
+      - JAVA_HOME=/opt/jdk  # <--- 强制指定这个 Java
+      - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
@@ -96,12 +102,15 @@ services:
     networks:
       - big-data-network
     volumes:
+      - ./libs/jdk:/opt/jdk
       - ./data/streampark_workspace:/streampark/workspace
       - ./flink-1.18.1/lib:/opt/flink/lib
       - ./flink-data/checkpoints:/opt/flink/checkpoints
       - ./flink-data/savepoints:/opt/flink/savepoints
       - ./flink-data/usrlib:/opt/flink/usrlib
     environment:
+      - JAVA_HOME=/opt/jdk  # <--- 强制指定这个 Java
+      - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
