@@ -186,6 +186,7 @@ under the License.
         </dependency>
 
 	</dependencies>
+
     <build>
         <pluginManagement>
             <plugins>
