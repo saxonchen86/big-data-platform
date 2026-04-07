@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 // --sourceTopic risk_control_logs
 // --kafkaGroupId dofi-group-v3
 // --ollamaHost host.docker.internal
+// --milvusHost milvus-standalone
 public class RealtimeRiskControlEmbeddingJob {
 
     public static void main(String[] args) throws Exception {

@@ -3,6 +3,7 @@ package com.expert.bigdata.func;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.bigdata.common.utils.MyParameter;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.service.vector.request.InsertReq;
@@ -20,8 +21,8 @@ public class VectorDatabaseSink extends RichSinkFunction<String> {
     @Override
     public void open(Configuration parameters) {
         ParameterTool params = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
-        String host = params.get("milvusHost", "localhost");
-
+        MyParameter myParameter = new MyParameter(params);
+        String host = myParameter.getMilvusHost();
         this.client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://" + host + ":19530").build());
         // 🗑️ 删除了沉重的 ObjectMapper 初始化

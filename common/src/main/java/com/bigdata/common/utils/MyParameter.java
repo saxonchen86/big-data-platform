@@ -1,9 +1,12 @@
 package com.bigdata.common.utils;
 
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.kafka.shaded.org.apache.kafka.common.protocol.types.Field;
 
 
 public class MyParameter {
+
+    // String host = params.get("milvusHost", "localhost");
 
     private String kafkaUrl;
     private String dbUrl;
@@ -15,6 +18,7 @@ public class MyParameter {
     private String kafkaGroupId;
     private String kafkaTopics;
     private String ollamaHost;
+    private String milvusHost;
 
     public MyParameter(ParameterTool parameterTool) {
         this.kafkaUrl = parameterTool.get("kafkaUrl", "localhost:9092");
@@ -27,6 +31,7 @@ public class MyParameter {
         this.kafkaGroupId = parameterTool.get("kafkaGroupId", "default-group-id");
         this.kafkaTopics = parameterTool.get("kafkaTopics", "risk_control_logs");
         this.ollamaHost = parameterTool.get("ollamaHost", "localhost");
+        this.milvusHost = parameterTool.get("milvusHost", "localhost");
     }
 
     // Getter methods
@@ -70,6 +75,10 @@ public class MyParameter {
         return ollamaHost;
     }
 
+    public String getMilvusHost() {
+        return milvusHost;
+    }
+
     // Setter methods
     public void setKafkaUrl(String kafkaUrl) {
         this.kafkaUrl = kafkaUrl;
@@ -109,5 +118,9 @@ public class MyParameter {
 
     public void setOllamaHost(String ollamaHost) {
         this.ollamaHost = ollamaHost;
+    }
+
+    public void setMilvusHost(String milvusHost) {
+        this.milvusHost = milvusHost;
     }
 }
