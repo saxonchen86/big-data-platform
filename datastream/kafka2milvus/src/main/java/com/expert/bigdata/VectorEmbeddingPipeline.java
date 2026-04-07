@@ -1,4 +1,4 @@
-//package com.expert.bigdata;
+package com.expert.bigdata;//package com.expert.bigdata;
 //
 //import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 //import org.apache.flink.connector.kafka.source.KafkaSourceBuilder;

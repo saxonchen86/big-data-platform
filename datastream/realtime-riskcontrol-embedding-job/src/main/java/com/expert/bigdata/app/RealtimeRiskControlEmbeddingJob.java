@@ -1,7 +1,7 @@
-package com.expert.bigdata.datastream.app;
+package com.expert.bigdata.app;
 
-import com.expert.bigdata.datastream.func.OllamaAsyncEmbeddingFunction;
-import com.expert.bigdata.datastream.func.VectorDatabaseSink;
+import com.expert.bigdata.func.OllamaAsyncEmbeddingFunction;
+import com.expert.bigdata.func.VectorDatabaseSink;
 import com.bigdata.common.utils.MyParameter;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
@@ -14,6 +14,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.util.concurrent.TimeUnit;
 
+// 本地运行
 // --kafkaUrl localhost:9092  --sourceTopic risk_control_logs  --kafkaGroupId dofi-group-v3
 
 // --kafkaUrl kafka:29092

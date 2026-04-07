@@ -1,4 +1,4 @@
-package com.expert.bigdata.datastream.func;
+package com.expert.bigdata.func;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
