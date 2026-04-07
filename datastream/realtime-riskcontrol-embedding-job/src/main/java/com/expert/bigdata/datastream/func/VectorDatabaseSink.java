@@ -1,9 +1,8 @@
 package com.expert.bigdata.datastream.func;
 
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.service.vector.request.InsertReq;
@@ -17,7 +16,6 @@ import java.util.List;
 
 public class VectorDatabaseSink extends RichSinkFunction<String> {
     private transient MilvusClientV2 client;
-    private transient ObjectMapper mapper;
 
     @Override
     public void open(Configuration parameters) {
@@ -26,35 +24,40 @@ public class VectorDatabaseSink extends RichSinkFunction<String> {
 
         this.client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://" + host + ":19530").build());
-        this.mapper = new ObjectMapper();
+        // 🗑️ 删除了沉重的 ObjectMapper 初始化
     }
 
-    // 修改后的代码片段
     @Override
     public void invoke(String value, Context context) throws Exception {
-        JsonNode node = mapper.readTree(value);
-        JSONObject row = new JSONObject();
-        row.put("raw_log", node.get("raw_log").asText());
+        // 1. 直接使用 Fastjson 解析原始字符串
+        JSONObject node = JSON.parseObject(value);
 
-        List<Float> vector = new ArrayList<>();
-        node.get("vector").forEach(v -> vector.add(v.floatValue()));
+        JSONObject row = new JSONObject();
+        row.put("raw_log", node.getString("raw_log"));
+
+        // 2. 提取向量数组
+        JSONArray vectorArray = node.getJSONArray("vector");
+
+        // 🌟 性能优化：直接指定 ArrayList 的初始容量
+        // 在 Flink 高频流处理中，避免 ArrayList 动态扩容带来的 CPU 和 GC 开销
+        List<Float> vector = new ArrayList<>(vectorArray.size());
+        for (int i = 0; i < vectorArray.size(); i++) {
+            vector.add(vectorArray.getFloat(i));
+        }
         row.put("vector", vector);
 
-        // 🌟 核心修改：将 UpsertReq 改为 InsertReq，将 client.upsert 改为 client.insert
         InsertReq insertReq = InsertReq.builder()
                 .collectionName("dofi_realtime_knowledge")
                 .data(Collections.singletonList(row))
                 .build();
 
-        client.insert(insertReq); // 使用 insert
+        client.insert(insertReq);
         System.out.println("🔥 成功持久化一条实时语义数据！");
     }
 
     @Override
     public void close() {
         if (client != null) {
-            // 传入一个超时时间（毫秒），例如 3000ms
-            // 如果你的 SDK 版本还是报错，可以尝试 client.close(3000L);
             try {
                 client.close(3000);
             } catch (Exception e) {

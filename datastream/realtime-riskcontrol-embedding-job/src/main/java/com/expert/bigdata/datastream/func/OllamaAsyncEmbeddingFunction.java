@@ -1,8 +1,8 @@
 package com.expert.bigdata.datastream.func;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.bigdata.common.utils.MyParameter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
@@ -18,25 +18,27 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 public class OllamaAsyncEmbeddingFunction extends RichAsyncFunction<String, String> {
     private static final Logger LOG = LoggerFactory.getLogger(OllamaAsyncEmbeddingFunction.class);
     private transient HttpClient client;
-    private transient ObjectMapper mapper;
     private String ollamaUrl;
 
     @Override
     public void open(Configuration parameters) {
         ParameterTool params = (ParameterTool) getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
         MyParameter myParameter = new MyParameter(params);
-        // 确保容器内能解析 host.docker.internal
         String host = myParameter.getOllamaHost();
         this.ollamaUrl = "http://" + host + ":11434/api/embeddings";
 
+        // 🌟 架构师视角：定制线程池
+        // 原生 HttpClient 默认使用无界缓存线程池，在 Flink 高吞吐异步 IO 时可能导致线程爆炸
+        // 这里显式指定一个有界或合理的线程池来控制并发资源消耗
         this.client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5)) // 稍微增加一点连接宽容度
+                .connectTimeout(Duration.ofSeconds(5))
+                .executor(Executors.newFixedThreadPool(20)) // 根据 TaskManager 的 CPU 核心数调优
                 .build();
-        this.mapper = new ObjectMapper();
     }
 
     @Override
@@ -48,27 +50,33 @@ public class OllamaAsyncEmbeddingFunction extends RichAsyncFunction<String, Stri
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(ollamaUrl))
-                    .timeout(Duration.ofSeconds(20)) // HTTP 请求层面 20 秒超时
-                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
+                    .timeout(Duration.ofSeconds(20))
+                    // 1. 使用 Fastjson 序列化请求体
+                    .POST(HttpRequest.BodyPublishers.ofString(JSON.toJSONString(body)))
                     .build();
 
             client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .whenComplete((resp, throwable) -> {
                         if (throwable != null) {
                             LOG.error("请求 Ollama 失败: {}", input, throwable);
-                            // 不直接 completeExceptionally，而是丢弃或打入死信队列侧输出流
-                            // 为了不阻断主流，这里传空集合表示放弃该条数据（生产中应输出到侧输出流保存）
                             resultFuture.complete(Collections.emptyList());
                             return;
                         }
 
                         try {
                             if (resp.statusCode() == 200) {
-                                JsonNode node = mapper.readTree(resp.body());
-                                if (node.has("embedding")) {
-                                    String res = String.format("{\"raw_log\": \"%s\", \"vector\": %s}",
-                                            input.replace("\"", "\\\""), node.get("embedding").toString());
-                                    resultFuture.complete(Collections.singletonList(res));
+                                // 2. 使用 Fastjson 解析响应
+                                JSONObject node = JSON.parseObject(resp.body());
+
+                                if (node.containsKey("embedding")) {
+                                    // 🌟 核心优化：拒绝手动拼接字符串，使用原生 JSON 对象构建
+                                    // 彻底杜绝 input 中包含奇葩转义字符导致 JSON 格式损坏的风险
+                                    JSONObject resultJson = new JSONObject();
+                                    resultJson.put("raw_log", input);
+                                    resultJson.put("vector", node.getJSONArray("embedding"));
+
+                                    // 直接输出序列化后的安全字符串
+                                    resultFuture.complete(Collections.singletonList(resultJson.toJSONString()));
                                 } else {
                                     LOG.warn("Ollama 返回数据格式异常: {}", resp.body());
                                     resultFuture.complete(Collections.emptyList());
@@ -88,14 +96,9 @@ public class OllamaAsyncEmbeddingFunction extends RichAsyncFunction<String, Stri
         }
     }
 
-    /**
-     * 核心防御机制：接管 Flink 的超时异常！
-     * 超过 Flink 规定的 unorderedWait 时间（如 30 秒）时触发，防止 Job 崩溃。
-     */
     @Override
     public void timeout(String input, ResultFuture<String> resultFuture) throws Exception {
         LOG.warn("❌ 数据处理超时 (超过了 Flink 设置的 Async Timeout) 丢弃数据: {}", input);
-        // 不抛出异常，完成 future，让作业继续运行后续数据
         resultFuture.complete(Collections.emptyList());
     }
 }
