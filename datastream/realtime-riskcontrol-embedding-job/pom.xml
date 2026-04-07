@@ -51,19 +51,24 @@
                                 <resource>reference.conf</resource>
                             </transformer>
                         </transformers>
-                        <relocations>
-                            <relocation>
-                                <pattern>io.grpc</pattern>
-                                <shadedPattern>com.expert.bigdata.shaded.io.grpc</shadedPattern>
-                            </relocation>
-                            <relocation>
-                                <pattern>com.google.protobuf</pattern>
-                                <shadedPattern>com.expert.bigdata.shaded.com.google.protobuf</shadedPattern>
-                            </relocation>
-                            <relocation>
-                                <pattern>com.google.common</pattern> <shadedPattern>com.expert.bigdata.shaded.com.google.common</shadedPattern>
-                            </relocation>
-                        </relocations>
+                            <relocations>
+                                <relocation>
+                                    <pattern>io.grpc</pattern>
+                                    <shadedPattern>com.expert.bigdata.shaded.io.grpc</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.protobuf</pattern>
+                                    <shadedPattern>com.expert.bigdata.shaded.com.google.protobuf</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>com.expert.bigdata.shaded.com.google.common</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.perfmark</pattern>
+                                    <shadedPattern>com.expert.bigdata.shaded.io.perfmark</shadedPattern>
+                                </relocation>
+                            </relocations>
                     </configuration>
                 </execution>
             </executions>
