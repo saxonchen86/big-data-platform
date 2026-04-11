@@ -5,6 +5,8 @@
     <file url="file://$PROJECT_DIR$/common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/datastream/employee-message-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/datastream/employee-message-processor/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/eth-sentiment-analysis-job/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datastream/eth-sentiment-analysis-job/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/datastream/kafka2milvus/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/datastream/kafka2milvus/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/datastream/realtime-riskcontrol-embedding-job/src/main/java" charset="UTF-8" />

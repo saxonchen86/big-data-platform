@@ -5,6 +5,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.api.java.utils.ParameterTool;
 import com.bigdata.common.utils.MyParameter;
+
 import static org.apache.flink.table.api.Expressions.$;
 
 // 本地idea运行参数
@@ -116,6 +117,6 @@ public class EmployeeMessageProcessor {
         processedTable.executeInsert("employee_kafka_sink");
 
         // 执行任务
-        env.execute("Employee Data Processing Job");
+//        env.execute("Employee Data Processing Job");
     }
 }

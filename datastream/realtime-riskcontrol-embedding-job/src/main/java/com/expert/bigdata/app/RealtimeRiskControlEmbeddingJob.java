@@ -51,7 +51,7 @@ public class RealtimeRiskControlEmbeddingJob {
                 new OllamaAsyncEmbeddingFunction(),
                 30000L,
                 TimeUnit.MILLISECONDS,
-                100
+                100 //如果 Flink 任务出现 Timeout，unorderedWait 中调低并行度（如从 100 降到 10）
         );
 
         // 5. 写入 Milvus Sink (必须确保 addSink 被正确调用)

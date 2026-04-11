@@ -19,6 +19,7 @@
         <module>realtime-riskcontrol-embedding-job</module>
         <module>kafka2milvus</module>
         <module>employee-message-processor</module>
+        <module>eth-sentiment-analysis-job</module>
     </modules>
 
     <dependencies>
