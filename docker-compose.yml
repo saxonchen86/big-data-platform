@@ -272,6 +272,10 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+#    scrape_configs:
+#      - job_name: 'eth_python_collector'
+#        static_configs:
+#          - targets: ['host.docker.internal:8000'] # 指向你 Mac 宿主机运行的脚本
     depends_on:
       - cadvisor
 

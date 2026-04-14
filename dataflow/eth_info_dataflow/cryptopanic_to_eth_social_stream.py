@@ -5,7 +5,7 @@ from kafka import KafkaProducer
 
 # 配置信息
 API_KEY = "你的_CRYPTOPANIC_API_KEY" # 免费版在官网注册即可获取
-KAFKA_BOOTSTRAP_SERVERS = ['localhost:9092'] # 对应你的 Kafka 3.7.0
+KAFKA_BOOTSTRAP_SERVERS = ['kafka:29092'] # 对应你的 Kafka 3.7.0
 KAFKA_TOPIC = 'eth_social_stream'
 CHECK_INTERVAL = 60 # 免费版建议每分钟请求一次，避免被封 IP
 
