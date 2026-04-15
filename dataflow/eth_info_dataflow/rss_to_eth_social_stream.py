@@ -26,7 +26,7 @@ SH_TZ = timezone(timedelta(hours=8))
 NEWS_SENT = Counter('rss_news_sent_total', 'Total news sent to Kafka', ['topic'])
 
 class RSSCollector:
-    def __init__(self, urls: List[str], bootstrap_servers: str = 'localhost:9092', check_interval: int = 60):
+    def __init__(self, urls: List[str], bootstrap_servers: str = 'kafka:29092', check_interval: int = 60):
         self.urls = urls
         self.bootstrap_servers = bootstrap_servers
         self.check_interval = check_interval
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     collector = RSSCollector(
         urls=crypto_feeds,
-        bootstrap_servers='localhost:9092',
+        bootstrap_servers='kafka:29092',
         check_interval=60
     )
 

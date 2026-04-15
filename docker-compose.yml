@@ -3,19 +3,22 @@ version: '3.8'
 services:
   # --- [开发容器] ---
   dev-runner:
-    build: 
+    build:
       context: .devcontainer
       dockerfile: Dockerfile
     container_name: dev-box
+    restart: always  # <-- 新增：随宿主机启动
     environment:
       - JAVA_HOME=/opt/jdk
       - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - TZ=Asia/Shanghai  # <-- 新增：上海时间
     volumes:
       - .:/workspace:cached
       - ~/.ssh:/root/.ssh:ro
       - ./libs/jdk:/opt/jdk
-      - streampark_maven_repo:/root/.m2  # 挂载到一个独立的卷
-    command: sleep infinity
+      - streampark_maven_repo:/root/.m2
+    # 修改 command：后台运行 Python 采集脚本，同时主进程保持 sleep infinity 让容器持续运行
+    command: bash -c "python3 /workspace/dataflow/eth_info_dataflow/rss_to_eth_social_stream.py & sleep infinity"
     networks:
       - big-data-network
 
@@ -23,6 +26,7 @@ services:
   kafka:
     image: apache/kafka:3.7.0
     container_name: kafka
+    restart: always  # <-- 新增：随宿主机启动
     ports:
       - "9092:9092"
       - "9094:9094"
@@ -35,16 +39,15 @@ services:
       CLUSTER_ID: "MKU3OEVBNTcwNTJDRkFDMz"
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      # 核心：INTERNAL 供 dofi 和 flink 使用，EXTERNAL 供 Mac 宿主机 IDEA 使用
       KAFKA_LISTENERS: INTERNAL://:29092,EXTERNAL://:9092,CONTROLLER://:9093
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LOG_FLUSH_INTERVAL_MS: 10000
-        # 关键：指定数据存储路径
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
+      TZ: Asia/Shanghai  # <-- 新增：上海时间
     deploy:
       resources:
         limits:
@@ -73,8 +76,9 @@ services:
       - ./data/flink_checkpoints:/flink_checkpoints
       - ./data/flink_uploads:/opt/flink/usr
     environment:
-      - JAVA_HOME=/opt/jdk  # <--- 强制指定这个 Java
+      - JAVA_HOME=/opt/jdk
       - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - TZ=Asia/Shanghai  # <-- 新增：上海时间
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
@@ -109,8 +113,9 @@ services:
       - ./flink-data/savepoints:/opt/flink/savepoints
       - ./flink-data/usrlib:/opt/flink/usrlib
     environment:
-      - JAVA_HOME=/opt/jdk  # <--- 强制指定这个 Java
+      - JAVA_HOME=/opt/jdk
       - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - TZ=Asia/Shanghai  # <-- 新增：上海时间
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
@@ -131,6 +136,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: streampark
       MYSQL_DATABASE: streampark
+      TZ: Asia/Shanghai  # <-- 新增：上海时间
     volumes:
       - ./data/mysql:/var/lib/mysql
     ports:
@@ -153,9 +159,10 @@ services:
       - big-data-network
     environment:
       - FLINK_HOME=/opt/flink
-      - JAVA_HOME=/opt/jdk  # <--- 强制指定这个 Java
+      - JAVA_HOME=/opt/jdk
       - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       - STREAM_PARK_WORKSPACE=/streampark/workspace
+      - TZ=Asia/Shanghai  # <-- 新增：上海时间
     depends_on:
       - flink-jobmanager
       - kafka
@@ -169,7 +176,7 @@ services:
       - ./data/streampark_workspace:/streampark/workspace
       - streampark_maven_repo:/root/.m2
       - ./data/flink_checkpoints:/flink_checkpoints
-    command: tail -f /dev/null  # <--- 加上这一行，强制容器不退出
+    command: tail -f /dev/null
 
   # --- 7. AI 基础设施 (Milvus) ---
   etcd:
@@ -182,9 +189,9 @@ services:
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
+      - TZ=Asia/Shanghai  # <-- 新增：上海时间
     volumes:
       - ./data/etcd:/etcd
-    # 修改这里：将 advertise 地址改为容器名 milvus-etcd，并监听所有接口
     command: etcd -advertise-client-urls=http://milvus-etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
 
   minio:
@@ -195,6 +202,7 @@ services:
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      TZ: Asia/Shanghai  # <-- 新增：上海时间
     ports:
       - "9001:9001"
       - "9000:9000"
@@ -213,13 +221,8 @@ services:
     environment:
       ETCD_ENDPOINTS: milvus-etcd:2379
       MINIO_ADDRESS: milvus-minio:9000
-      # --- 关键修复：强制 Standalone 组件走本地回环 ---
-      # 避免组件向 Etcd 注册不稳定的 Docker IP
       COMMON_STORAGETYPE: minio
-      # 关键：强制 Proxy 和节点在 Standalone 模式下的行为
-      # 如果还是不行，强制指定地址
-      # MILVUS_ADDRESS: 0.0.0.0:19530
-      TZ: Asia/Shanghai
+      TZ: Asia/Shanghai  # <-- 原本已有，保持不变
     volumes:
       - ./data/milvus:/var/lib/milvus
       - ./data/logs/milvus:/milvus/logs
@@ -232,17 +235,17 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '8'      # 留 4 个核给系统和 Ollama
-          memory: 16G    # 48G 总内存，给向量库留足空间
+          cpus: '8'
+          memory: 16G
 
   attu:
     container_name: milvus-attu
-    image: zilliz/attu:latest # 既然是 2.4.15 的 Milvus，强制用这个稳定的 Attu 版本
+    image: zilliz/attu:latest
     networks:
       - big-data-network
     environment:
-      # 修改这里：指向 milvus 的 container_name
       MILVUS_URL: milvus-standalone:19530
+      TZ: Asia/Shanghai  # <-- 新增：上海时间
     ports:
       - "8000:3000"
     depends_on:
@@ -255,6 +258,8 @@ services:
     privileged: true
     networks:
       - big-data-network
+    environment:
+      - TZ=Asia/Shanghai  # <-- 新增：上海时间
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -268,14 +273,12 @@ services:
     container_name: monitoring-prometheus
     networks:
       - big-data-network
+    environment:
+      - TZ=Asia/Shanghai  # <-- 新增：上海时间
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
-#    scrape_configs:
-#      - job_name: 'eth_python_collector'
-#        static_configs:
-#          - targets: ['host.docker.internal:8000'] # 指向你 Mac 宿主机运行的脚本
     depends_on:
       - cadvisor
 
@@ -288,6 +291,7 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - TZ=Asia/Shanghai  # <-- 新增：上海时间
     depends_on:
       - prometheus
 
