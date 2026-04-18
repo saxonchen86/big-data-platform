@@ -10,7 +10,7 @@ services:
     restart: always  # <-- 新增：随宿主机启动
     environment:
       - JAVA_HOME=/opt/jdk
-      - PATH=/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - PATH=/opt/venv/bin:/opt/jdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       - TZ=Asia/Shanghai  # <-- 新增：上海时间
     volumes:
       - .:/workspace:cached

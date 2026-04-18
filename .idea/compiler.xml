@@ -18,6 +18,7 @@
         <module name="risk-common" />
         <module name="common" />
         <module name="risk-connector" />
+        <module name="eth-sentiment-trading-job" />
         <module name="kafka2milvus" />
         <module name="risk-core" />
         <module name="eth-sentiment-analysis-job" />

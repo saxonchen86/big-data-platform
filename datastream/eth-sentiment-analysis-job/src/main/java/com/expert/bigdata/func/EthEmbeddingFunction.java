@@ -16,11 +16,15 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.io.IOException;
 
 public class EthEmbeddingFunction extends RichAsyncFunction<String, String> {
     private transient HttpClient client;
     private String ollamaUrl;
+    private static final ExecutorService executor = Executors.newFixedThreadPool(20);
 
     @Override
     public void open(Configuration parameters) {
@@ -49,23 +53,32 @@ public class EthEmbeddingFunction extends RichAsyncFunction<String, String> {
                 .POST(HttpRequest.BodyPublishers.ofString(JSON.toJSONString(body)))
                 .build();
 
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .whenComplete((resp, throwable) -> {
-                    if (resp != null && resp.statusCode() == 200) {
-                        JSONObject node = JSON.parseObject(resp.body());
+        // 使用线程池优化异步调用
+        CompletableFuture<HttpResponse<String>> future = CompletableFuture.supplyAsync(() -> {
+            try {
+                return client.send(request, HttpResponse.BodyHandlers.ofString());
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }, executor);
 
-                        // 构建合并后的结果给 Sink
-                        JSONObject output = new JSONObject();
-                        output.put("raw_content", textToEmbed);
-                        output.put("score", aiAnalysis.getInteger("score")); // 提取分数
-                        output.put("reason", aiAnalysis.getString("reason"));
-                        output.put("timestamp", sentimentResult.getLong("timestamp"));
-                        output.put("vector", node.getJSONArray("embedding"));
+        future.whenComplete((resp, throwable) -> {
+            if (resp != null && resp.statusCode() == 200) {
+                JSONObject node = JSON.parseObject(resp.body());
 
-                        resultFuture.complete(Collections.singletonList(output.toJSONString()));
-                    } else {
-                        resultFuture.complete(Collections.emptyList());
-                    }
-                });
+                // 构建合并后的结果给 Sink
+                JSONObject output = new JSONObject();
+                output.put("raw_content", textToEmbed);
+                output.put("embedding", node.getJSONArray("embedding"));
+                output.put("ai_analysis", aiAnalysis);
+
+                resultFuture.complete(Collections.singletonList(output.toJSONString()));
+            } else {
+                // 处理错误情况
+                resultFuture.completeExceptionally(
+                        new RuntimeException("Failed to fetch embedding: " + (resp != null ? resp.statusCode() : "null response"))
+                );
+            }
+        });
     }
 }

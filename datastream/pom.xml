@@ -20,6 +20,7 @@
         <module>kafka2milvus</module>
         <module>employee-message-processor</module>
         <module>eth-sentiment-analysis-job</module>
+        <module>eth-sentiment-trading-job</module>
     </modules>
 
     <dependencies>

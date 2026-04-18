@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # 3. 安装 SDKMAN 并配置 JDK 17 + Scala 2.13
-# 这里显式安装 17.0.10-tem，这是最匹配 Flink 1.18 的版本
 ENV SDKMAN_DIR="/root/.sdkman"
 RUN curl -s "https://get.sdkman.io" | bash \
     && bash -c "source $HOME/.sdkman/bin/sdkman-init.sh && \
@@ -27,15 +26,20 @@ RUN curl -s "https://get.sdkman.io" | bash \
 ENV PATH="$SDKMAN_DIR/candidates/java/current/bin:$SDKMAN_DIR/candidates/scala/current/bin:$SDKMAN_DIR/candidates/sbt/current/bin:$SDKMAN_DIR/candidates/maven/current/bin:$PATH"
 ENV JAVA_HOME="$SDKMAN_DIR/candidates/java/current"
 
-# 5. 安装 Python 3.13 和大数据组件
+# 5. 安装 Python 3.13 和大数据/采集组件
 RUN uv python install 3.13
 ENV VIRTUAL_ENV=/opt/venv
 RUN uv venv $VIRTUAL_ENV --python 3.13
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# 安装常用大数据库
+# 这里合并了你原有的 pyspark 和新需要的采集包
 RUN uv pip install \
-    pyspark==3.5.0 
+    pyspark==3.5.0 \
+    aiohttp==3.13.5 \
+    aiokafka==0.13.0 \
+    beautifulsoup4==4.14.3 \
+    feedparser==6.0.12 \
+    prometheus_client==0.25.0
 
 WORKDIR /workspace
 CMD ["sleep", "infinity"]

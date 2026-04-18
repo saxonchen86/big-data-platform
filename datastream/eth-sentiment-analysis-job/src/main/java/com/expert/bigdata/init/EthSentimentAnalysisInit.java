@@ -33,6 +33,16 @@ public class EthSentimentAnalysisInit {
         // 向量字段 (nomic-embed-text 维度通常是 768)
         schema.addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(768).build());
 
+        // 在之前的创建语句中增加以下字段
+        // 1. 记录发生时的价格
+        schema.addField(AddFieldReq.builder().fieldName("price_at_t").dataType(DataType.Float).build());
+        // 2. 24小时后的价格（初始为0，由结算脚本更新）
+        schema.addField(AddFieldReq.builder().fieldName("price_after_24h").dataType(DataType.Float).build());
+        // 3. 24小时收益率 (price_after_24h - price_at_t) / price_at_t
+        schema.addField(AddFieldReq.builder().fieldName("return_24h").dataType(DataType.Float).build());
+        // 4. 结算标志位 (用于过滤掉还没产生收益结果的新数据)
+        schema.addField(AddFieldReq.builder().fieldName("is_settled").dataType(DataType.Bool).build());
+
         // 3. 设置索引参数 (为了能够进行向量搜索)
         List<IndexParam> indexParams = new ArrayList<>();
         indexParams.add(IndexParam.builder()
