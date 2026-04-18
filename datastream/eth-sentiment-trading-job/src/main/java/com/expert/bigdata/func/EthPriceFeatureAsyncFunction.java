@@ -30,7 +30,7 @@ public class EthPriceFeatureAsyncFunction extends RichAsyncFunction<String, Stri
                 ObjectNode node = (ObjectNode) mapper.readTree(input);
                 long pubDate = node.get("pubDate").asLong();
 
-                String sql = "SELECT rsi_14, atr_14, price_at_t FROM eth_kline_features WHERE timestamp <= ? ORDER BY timestamp DESC LIMIT 1";
+                String sql = "SELECT rsi_14, atr_14, price_at_t FROM trade.eth_kline_features WHERE timestamp <= ? ORDER BY timestamp DESC LIMIT 1";
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setLong(1, pubDate);
                 ResultSet rs = ps.executeQuery();

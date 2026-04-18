@@ -6,7 +6,7 @@ import io.milvus.client.MilvusServiceClient;
 import io.milvus.param.ConnectParam;
 import io.milvus.param.R;
 import io.milvus.param.dml.InsertParam;
-import io.milvus.response.MutationResultWrapper;
+
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.slf4j.Logger;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -83,7 +84,7 @@ public class MilvusSink extends RichSinkFunction<String> {
                     .withFields(fields)
                     .build();
 
-            R<MutationResultWrapper> response = milvusClient.insert(insertParam);
+            R<io.milvus.grpc.MutationResult> response = milvusClient.insert(insertParam);
 
             if (response.getStatus() != R.Status.Success.getCode()) {
                 LOG.error("[{}] Milvus insert failed: {}", traceId, response.getMessage());

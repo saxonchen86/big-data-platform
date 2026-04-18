@@ -71,13 +71,13 @@ public class EthSentimentAnalysisJob {
         // 数据清洗算子：过滤掉
 //        kafkaStream.print(); // 打印数据流
 
-        // 2. 异步情绪分析算子：调用 Qwen3-Coder:30b 进行语义理解
+        // 2. 异步情绪分析算子：调用 大模型 进行语义理解
         DataStream<String> sentimentStream = AsyncDataStream.unorderedWait(
                 kafkaStream,
                 new EthSentimentOllamaFunction(), // 自定义情绪分析函数
                 60000L, // LLM 推理较慢，超时设为 60s
                 TimeUnit.MILLISECONDS,
-                // qwen3-coder:30b 运行时会占用大量显存，如果 Flink 任务出现 Timeout，unorderedWait 中调低并行度（如从 20 降到 10）
+                // 模型运行时会占用大量显存，如果 Flink 任务出现 Timeout，unorderedWait 中调低并行度（如从 20 降到 10）
                 20 // 控制并发数，保护 MacBook M4 Pro 的显存
         );
 

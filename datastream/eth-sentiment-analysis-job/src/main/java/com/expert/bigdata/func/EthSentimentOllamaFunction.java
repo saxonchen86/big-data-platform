@@ -33,7 +33,7 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
 
         this.client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
-                .executor(Executors.newFixedThreadPool(10)) // 降低并发以保证 Qwen3:30b 的响应质量
+                .executor(Executors.newFixedThreadPool(10)) // 降低并发以保证 模型 的响应质量
                 .build();
     }
 
@@ -47,7 +47,7 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
                 input);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("model", "qwen3-coder:30b");
+        body.put("model", "gemma-31b-crack");
         body.put("prompt", prompt);
         body.put("stream", false); // 必须关闭 stream 模式以获取完整响应
 

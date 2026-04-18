@@ -66,6 +66,8 @@ services:
     command: jobmanager
     networks:
       - big-data-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./libs/jdk:/opt/jdk
       - ./data/streampark_workspace:/streampark/workspace
@@ -105,6 +107,8 @@ services:
     command: taskmanager
     networks:
       - big-data-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./libs/jdk:/opt/jdk
       - ./data/streampark_workspace:/streampark/workspace
