@@ -29,9 +29,9 @@ class MarketDataCollector:
         # 2. 初始化数据库连接
         self.db = mysql.connector.connect(
             host=os.getenv("MYSQL_HOST", "localhost"),
-            user=os.getenv("MYSQL_USER"),
-            password=os.getenv("MYSQL_PASSWORD"),
-            database=os.getenv("MYSQL_DATABASE")
+            user=os.getenv("MYSQL_USER", "root"),
+            password=os.getenv("MYSQL_PASSWORD", "streampark"),
+            database=os.getenv("MYSQL_DATABASE", "trade")
         )
         self.cursor = self.db.cursor()
 
@@ -52,7 +52,7 @@ class MarketDataCollector:
             df = df.dropna()
 
             sql = """
-                  REPLACE INTO eth_kline_features
+                  REPLACE INTO trade.eth_kline_features
                       (timestamp, datetime_sh, price_at_t, rsi_14, atr_14, high, low, close)
                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s) \
                   """

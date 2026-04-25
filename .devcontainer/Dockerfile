@@ -39,7 +39,13 @@ RUN uv pip install \
     aiokafka==0.13.0 \
     beautifulsoup4==4.14.3 \
     feedparser==6.0.12 \
-    prometheus_client==0.25.0
+    prometheus_client==0.25.0 \
+    pandas \
+    pandas-ta \
+    mysql-connector-python \
+    pytz \
+    python-dotenv \
+    ccxt
 
 WORKDIR /workspace
 CMD ["sleep", "infinity"]

@@ -13,15 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
- * 记忆存入 Sink：将实时特征与向量存入 Milvus
- * 遵循：is_settled 默认为 false，traceId 追踪
+ * 高维记忆持久化 (Milvus Sink 节点)
+ * <p>
+ * 作为全链路的闭环阶段之一，该组件负责将通过流计算实时生成的环境高维特征向量，
+ * 及标量标签（RSI、价格、情绪指标等）持久落库到 Milvus 引擎。
+ * 它构成了系统不断自学习的“知识库”基座，赋能后续流数据的近似历史搜寻。
+ * 特性：is_settled 默认标记为 false，由外部批归档系统异步校验胜负后回填结算。
  */
 public class MilvusSink extends RichSinkFunction<String> {
     private static final Logger LOG = LoggerFactory.getLogger(MilvusSink.class);
@@ -58,13 +61,20 @@ public class MilvusSink extends RichSinkFunction<String> {
 
             // 2. 准备数据行 (Fields 必须与 Milvus Schema 一致)
             List<InsertParam.Field> fields = new ArrayList<>();
+
             // 主键或唯一标识
             fields.add(new InsertParam.Field("event_id", Collections.singletonList(node.get("id").asText())));
             fields.add(new InsertParam.Field("title", Collections.singletonList(node.get("title").asText())));
-            fields.add(new InsertParam.Field("sentiment_score", Collections.singletonList(node.get("sentiment_score").asInt())));
+
+            // 🚨 关键修复：DataType.INT64 必须使用 Long，即 asLong()
+            fields.add(new InsertParam.Field("sentiment_score", Collections.singletonList(node.get("sentiment_score").asLong())));
+
+            // DataType.DOUBLE 使用 asDouble()
             fields.add(new InsertParam.Field("rsi_14", Collections.singletonList(node.get("rsi_14").asDouble())));
             fields.add(new InsertParam.Field("atr_14", Collections.singletonList(node.get("atr_14").asDouble())));
             fields.add(new InsertParam.Field("price_at_t", Collections.singletonList(node.get("price_at_t").asDouble())));
+
+            // DataType.INT64 使用 asLong()
             fields.add(new InsertParam.Field("pub_date", Collections.singletonList(node.get("pubDate").asLong())));
             fields.add(new InsertParam.Field("sentiment_es", Collections.singletonList(node.get("sentiment_es").asLong())));
 
@@ -75,8 +85,10 @@ public class MilvusSink extends RichSinkFunction<String> {
 
             // 初始状态：未结算
             fields.add(new InsertParam.Field("is_settled", Collections.singletonList(false)));
-            // 预留胜率字段，初始为 0
+            // 预留胜率字段，初始为 0.0
             fields.add(new InsertParam.Field("win_rate", Collections.singletonList(0.0)));
+            // 🆕 新增：上一步 Python 建表脚本中加入的收益率字段，初始为 0.0
+            fields.add(new InsertParam.Field("return", Collections.singletonList(0.0)));
 
             // 3. 执行插入
             InsertParam insertParam = InsertParam.newBuilder()
