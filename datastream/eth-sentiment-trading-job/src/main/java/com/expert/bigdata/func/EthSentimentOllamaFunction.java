@@ -1,7 +1,6 @@
 package com.expert.bigdata.func;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
@@ -48,17 +47,23 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
         String summary = node.getString("summary");
         String traceId = node.containsKey("id") ? node.getString("id") : "unknown";
 
-        // 防御性逻辑：如果 summary 为空，则降级使用 title。如果全空，则直接抛弃（或设默认值）
-        String contentToAnalyze = "";
-        if (title != null && !title.isEmpty()) contentToAnalyze += "Title: " + title + "\n";
-        if (summary != null && !summary.isEmpty()) contentToAnalyze += "Summary: " + summary;
-        contentToAnalyze = contentToAnalyze.trim();
-
-        if (contentToAnalyze.isEmpty()) {
-            LOG.warn("[{}] Both title and summary are empty, skipping LLM analysis.", traceId);
+        // 当 title 为空时，直接过滤掉这条数据
+        if (title == null || title.trim().isEmpty()) {
+            LOG.warn("[{}] Title is empty, filtering out this record.", traceId);
             resultFuture.complete(Collections.emptyList());
-            return;
+            return; // 结束当前处理，不发送给下游
         }
+
+        // 当 summary 为空时，使用 title 的值填充 summary
+        if (summary == null || summary.trim().isEmpty()) {
+            summary = title;
+            // 如果你需要将补全后的 summary 也一并传递给下游的 Flink 算子，可以将它写回 node
+            node.put("summary", summary);
+            LOG.info("[{}] Summary is empty, filled with Title.", traceId);
+        }
+
+        // 构建发给大模型分析的文本（因为上面已经保证了 title 和 summary 都有值，所以这里可以直接拼接）
+        String contentToAnalyze = "Title: " + title + "\nSummary: " + summary;
 
         JSONObject requestBody = new JSONObject();
         // 匹配你本地的大模型
@@ -94,6 +99,7 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
         request.setHeader("Content-Type", "application/json");
         request.setEntity(new StringEntity(requestBody.toJSONString(), "UTF-8"));
 
+        String finalSummary = summary;
         CompletableFuture.runAsync(() -> {
             try {
                 httpClient.execute(request, new org.apache.http.concurrent.FutureCallback<HttpResponse>() {
@@ -140,7 +146,7 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
                             // 补充数据回传
                             node.put("sentiment_score", score);
                             node.put("sentiment_reason", contentJson.getString("sentiment_reason"));
-                            node.put("raw_content", summary);
+                            node.put("raw_content", finalSummary);
                             node.put("sentiment_es", Instant.now().atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
 
                             resultFuture.complete(Collections.singletonList(node.toJSONString()));
