@@ -61,6 +61,7 @@ class RSSCollector:
         finally:
             await self.producer.stop()
 
+    # 👇 注意以下代码的缩进，已将它们放入类定义中 👇
     async def fetch_and_parse(self, url: str) -> List[Dict]:
         """异步获取并解析单个 RSS 源"""
         try:
@@ -92,14 +93,25 @@ class RSSCollector:
                             except Exception as te:
                                 logger.error(f"时间解析错误: {te}")
 
-                        # 3. 构造精简后的 Item
+                        # 🛑 3. 新增过滤逻辑：过滤掉 pubDate + 30分钟 < now() 的数据
+                        current_ts_ms = int(time.time() * 1000)
+                        thirty_mins_ms = 30 * 60 * 1000 # 30分钟的毫秒数
+
+                        # 如果解析到了有效时间，且 (发布时间 + 30分钟) 小于 当前时间
+                        if pub_ts_ms > 0 and (pub_ts_ms + thirty_mins_ms < current_ts_ms):
+                            # 数据太旧，记录到已看集合中，避免下次循环重复解析
+                            self.seen_entries.add(entry_id)
+                            # logger.debug(f"⏳ 数据太旧已过滤 (发布时间: {pub_date_str}): {entry.get('title')}")
+                            continue
+
+                        # 4. 构造精简后的 Item
                         item = {
                             "id": entry_id,
                             "title": entry.get('title'),
                             "summary": clean_summary,
                             "pubDate": pub_ts_ms,  # 毫秒时间戳
                             "source": url,
-                            "es": int(time.time() * 1000) # 采集时间戳（原 timestamp）
+                            "es": current_ts_ms # 采集时间戳（原 timestamp）
                         }
                         new_items.append(item)
                         self.seen_entries.add(entry_id)

@@ -1,1 +1,25 @@
-# 依赖清单
+kafka-python
+
+# 核心计算与数据处理
+pyspark==3.5.0
+pandas
+pandas-ta
+
+# 异步与消息队列
+aiohttp==3.13.5
+aiokafka==0.13.0
+
+# 爬虫与解析
+beautifulsoup4==4.14.3
+feedparser==6.0.12
+
+# 监控与数据库
+prometheus_client==0.25.0
+mysql-connector-python
+
+# 交易与金融工具
+ccxt
+python-dotenv
+pytz
+
+pymilvus

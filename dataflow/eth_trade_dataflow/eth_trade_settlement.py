@@ -14,7 +14,7 @@ load_dotenv()
 class MilvusSettlementWorker:
     def __init__(self):
         # 1. 连接 Milvus
-        host = os.getenv("MILVUS_HOST", "localhost")
+        host = os.getenv("MILVUS_HOST", "milvus-standalone")
         port = os.getenv("MILVUS_PORT", "19530")
         logger.info(f"Connecting to Milvus at {host}:{port}...")
         connections.connect("default", host=host, port=port)
@@ -32,7 +32,7 @@ class MilvusSettlementWorker:
         ]
 
         # 2. 初始化 Kafka 消费者
-        kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+        kafka_bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
         self.topic = "topic_trade_signals"
 
         logger.info(f"Connecting to Kafka: {kafka_bootstrap}, listening on topic: {self.topic}")

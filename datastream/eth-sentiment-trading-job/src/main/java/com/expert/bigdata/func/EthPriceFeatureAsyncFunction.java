@@ -59,7 +59,7 @@ public class EthPriceFeatureAsyncFunction extends RichAsyncFunction<String, Stri
                             resultFuture.complete(Collections.singletonList(jsonObject.toJSONString()));
                         } else {
                             // 2. 增加日志：查询不到结果时记录 pubDate
-                            // LOG.info("No records found for timestamp <= {}", pubDate);
+                             LOG.info("No records found for timestamp <= {}", pubDate);
                             resultFuture.complete(Collections.emptyList());
                         }
                     }

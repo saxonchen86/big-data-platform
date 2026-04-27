@@ -32,20 +32,12 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN uv venv $VIRTUAL_ENV --python 3.13
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# 这里合并了你原有的 pyspark 和新需要的采集包
-RUN uv pip install \
-    pyspark==3.5.0 \
-    aiohttp==3.13.5 \
-    aiokafka==0.13.0 \
-    beautifulsoup4==4.14.3 \
-    feedparser==6.0.12 \
-    prometheus_client==0.25.0 \
-    pandas \
-    pandas-ta \
-    mysql-connector-python \
-    pytz \
-    python-dotenv \
-    ccxt
+
+# 先将本地的 requirements.txt 拷贝到镜像中
+COPY requirements.txt .
+
+# 使用 uv 进行快速安装
+RUN uv pip install --no-cache -r requirements.txt
 
 WORKDIR /workspace
 CMD ["sleep", "infinity"]

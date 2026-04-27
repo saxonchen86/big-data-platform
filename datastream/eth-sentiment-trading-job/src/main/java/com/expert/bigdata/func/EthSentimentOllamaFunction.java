@@ -70,14 +70,22 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
         requestBody.put("model", "deepseek-r1:8b");
         requestBody.put("stream", false);
 
-        // 1. Prompt 升级：明确指定目标 JSON 格式，并优先输出核心结论（Score和Reason），把长推理链推理放到最后
-        String prompt = "You are an expert ETH quantitative analyst...\n" +
+// 定义分析师角色和严格的输出规范
+        String prompt = "You are a Professional ETH Quantitative Analyst specializing in market sentiment and ecosystem impact. " +
+                "Analyze the following text to evaluate its influence on Ethereum's price and network growth.\n\n" +
+                "### CRITICAL INSTRUCTIONS:\n" +
+                "1. sentiment_score: Integer from 1 to 10. (1: Extremely Bearish, 5: Neutral, 10: Extremely Bullish).\n" +
+                "2. sentiment_reason: A concise summary of the key impact (MAX 15 words).\n" +
+                "3. reasoning: Brief quantitative logic behind the score (MAX 2 sentences).\n" +
+                "4. Output MUST be a valid JSON object. No preamble, no additional text.\n\n" +
+                "Text to Analyze: " + contentToAnalyze + "\n\n" +
+                "### Expected JSON Format:\n" +
                 "{\n" +
                 "  \"sentiment_score\": 5,\n" +
-                "  \"sentiment_reason\": \"concise summary\",\n" +
-                "  \"reasoning\": \"brief logic in 2 sentences\"\n" + // 明确要求简短
-                "}\n\n" +
-                "Text: " + contentToAnalyze;
+                "  \"sentiment_reason\": \"...\",\n" +
+                "  \"reasoning\": \"...\"\n" +
+                "}";
+
         requestBody.put("prompt", prompt);
 
         // 2. 参数重置：恢复 repeat_penalty 并彻底关闭底层 format 掩码。
