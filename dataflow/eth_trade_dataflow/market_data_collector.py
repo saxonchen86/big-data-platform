@@ -28,7 +28,7 @@ class MarketDataCollector:
 
         # 2. 初始化数据库连接
         self.db = mysql.connector.connect(
-            host=os.getenv("MYSQL_HOST", "localhost"),
+            host=os.getenv("MYSQL_HOST", "mysql"),
             user=os.getenv("MYSQL_USER", "root"),
             password=os.getenv("MYSQL_PASSWORD", "streampark"),
             database=os.getenv("MYSQL_DATABASE", "trade")
