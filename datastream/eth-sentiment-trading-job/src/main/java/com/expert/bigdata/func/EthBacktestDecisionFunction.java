@@ -30,9 +30,11 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
     @Override
     public void open(Configuration parameters) {
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
+        String host = params.getOrDefault("milvusHost", params.getOrDefault("milvus.host", "localhost"));
+        String portStr = params.getOrDefault("milvusPort", params.getOrDefault("milvus.port", "19530"));
         milvusClient = new MilvusServiceClient(ConnectParam.newBuilder()
-                .withHost(params.get("milvus.host"))
-                .withPort(Integer.parseInt(params.get("milvus.port")))
+                .withHost(host)
+                .withPort(Integer.parseInt(portStr))
                 .build());
     }
 
@@ -83,7 +85,8 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
                 int validMatches = 0;
                 double maxSimilarity = 0;
 
-                if (searchResp.getStatus() == io.milvus.param.R.Status.Success.getCode() && searchResp.getData() != null) {
+                if (searchResp.getStatus() == io.milvus.param.R.Status.Success.getCode()
+                        && searchResp.getData() != null) {
                     SearchResultsWrapper wrapper = new SearchResultsWrapper(searchResp.getData().getResults());
                     List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(0);
 
@@ -109,7 +112,7 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
                 double avgWinRate = (validMatches > 0) ? (winCount / validMatches) : 0;
 
                 // 目标决策：最大相似度 > 90% 且 胜率 > 65%
-//                if (maxSimilarity > 0.9 && avgWinRate > 0.65) {
+                // if (maxSimilarity > 0.9 && avgWinRate > 0.65) {
                 if (maxSimilarity >= 0.0) { // 用于测试，获取原始数据
                     JSONObject signal = new JSONObject();
                     if (node.getLong("sentiment_score") > 8) {
@@ -125,7 +128,8 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
                     signal.put("buy_time", Instant.now().atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
                     signal.put("sell_time", null);
                     signal.put("trigger_score", node.getLong("sentiment_score"));
-                    signal.put("timestamp", Instant.now().atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
+                    signal.put("timestamp",
+                            Instant.now().atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli());
 
                     LOG.info("🔥 [交易指令] 匹配到相似历史！最大相似度: {}, 胜率: {}", maxSimilarity, avgWinRate);
                     resultFuture.complete(Collections.singletonList(signal.toJSONString()));

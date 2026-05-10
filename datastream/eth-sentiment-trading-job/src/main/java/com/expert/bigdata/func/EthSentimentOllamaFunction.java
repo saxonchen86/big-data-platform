@@ -27,9 +27,12 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
 
     @Override
     public void open(Configuration parameters) {
-        // 核心修复：使用 host.docker.internal 并在获取参数时进行 trim() 防御
-        apiUrl = getRuntimeContext().getExecutionConfig().getGlobalJobParameters()
-                .toMap().getOrDefault("ollama.api.url", "http://host.docker.internal:11434/api/generate").trim();
+        // 核心修复：支持命令行传递 ollamaHost，并向下兼容
+        var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
+        String host = params.getOrDefault("ollamaHost", params.getOrDefault("ollama.host", "host.docker.internal"));
+        String defaultApiUrl = "http://" + host + ":11434/api/generate";
+        
+        apiUrl = params.getOrDefault("ollama.api.url", defaultApiUrl).trim();
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(5000)

@@ -41,9 +41,12 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
     public void open(Configuration parameters) throws Exception {
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
 
+        String host = params.getOrDefault("milvusHost", params.getOrDefault("milvus.host", "localhost"));
+        String portStr = params.getOrDefault("milvusPort", params.getOrDefault("milvus.port", "19530"));
+
         ConnectParam connectParam = ConnectParam.newBuilder()
-                .withHost(params.get("milvus.host"))
-                .withPort(Integer.parseInt(params.get("milvus.port")))
+                .withHost(host)
+                .withPort(Integer.parseInt(portStr))
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
 
