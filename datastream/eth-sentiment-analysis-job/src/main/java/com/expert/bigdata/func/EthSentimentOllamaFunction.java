@@ -47,7 +47,7 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
                 input);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("model", "deepseek-r1:8b");
+        body.put("model", "qwen3.6:35b-a3b-coding-nvfp4");
         body.put("prompt", prompt);
         body.put("stream", false); // 必须关闭 stream 模式以获取完整响应
 

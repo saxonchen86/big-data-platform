@@ -67,7 +67,7 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
 
         JSONObject requestBody = new JSONObject();
         // 匹配你本地的大模型
-        requestBody.put("model", "deepseek-r1:8b");
+        requestBody.put("model", "qwen3.6:35b-a3b-coding-nvfp4");
         requestBody.put("stream", false);
 
 // 定义分析师角色和严格的输出规范

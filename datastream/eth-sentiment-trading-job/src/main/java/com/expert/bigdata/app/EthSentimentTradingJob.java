@@ -36,8 +36,6 @@ public class EthSentimentTradingJob {
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.getConfig().setGlobalJobParameters(params);
-        // 方便打印
-        env.setParallelism(1);
 
         // 2. Kafka 数据源
         KafkaSource<String> source = KafkaSource.<String>builder()
