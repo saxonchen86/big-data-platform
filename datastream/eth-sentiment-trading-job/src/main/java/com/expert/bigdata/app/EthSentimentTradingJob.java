@@ -18,16 +18,16 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import java.util.concurrent.TimeUnit;
 
 /**
- * --kafkaUrl "localhost:9092"
- * --sourceTopic "eth_social_stream"
- * --sinkTopic "topic_trade_signals"
- * --kafkaGroupId "eth-sentiment-group"
- * --ollamaHost "localhost"
- * --milvusHost "localhost"
- * --dbUrl "jdbc:mysql://localhost:3306/streampark"
- * --dbUsername "root"
- * --dbPassword "streampark"
- * --embeddingUrl "http://localhost:11434/api/embeddings"
+  --kafkaUrl "localhost:9092"
+  --sourceTopic "eth_social_stream"
+  --sinkTopic "topic_trade_signals"
+  --kafkaGroupId "eth-sentiment-group"
+  --ollamaHost "localhost"
+  --milvusHost "localhost"
+  --dbUrl "jdbc:mysql://localhost:3306/streampark"
+  --dbUsername "root"
+  --dbPassword "streampark"
+  --embeddingUrl "http://localhost:11434/api/embeddings"
  */
 
     /**  生产启动参数
