@@ -14,6 +14,7 @@ import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.concurrent.TimeUnit;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +36,7 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
 
     // 微批处理缓冲区
     private transient List<JSONObject> batchBuffer;
-    private static final int BATCH_SIZE = 500; // 当积累到500条时，打包一次性写入 Milvus
+    private static final int BATCH_SIZE = 1; // 当积累到500条时，打包一次性写入 Milvus
 
     @Override
     public void open(Configuration parameters) throws Exception {
@@ -47,6 +48,10 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost(host)
                 .withPort(Integer.parseInt(portStr))
+                .withConnectTimeout(5, TimeUnit.SECONDS) // 必须增加：设置 5 秒连接超时
+//                .withKeepAliveWithoutCalls(true) // 保持长连接活跃
+                .keepAliveWithoutCalls(true)
+                .withKeepAliveTime(10, TimeUnit.SECONDS)
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
 
