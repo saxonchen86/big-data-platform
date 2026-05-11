@@ -14,6 +14,7 @@ import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.TimeUnit;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
     @Override
     public void open(Configuration parameters) throws Exception {
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
-        milvusHost = params.getOrDefault("milvusHost", "localhost");
+        milvusHost = params.getOrDefault("milvusHost", "milvus-standalone");
         milvusPort = params.getOrDefault("milvusPort", "19530");
         this.lock = new Object();
         this.collectionName = params.getOrDefault("milvusCollection", "eth_sentiment_analysis");
@@ -66,6 +67,7 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
                 }
             }
         }
+        LOG.info("尝试连接 Milvus，目标地址为: {}:{}", milvusHost, milvusPort);
     }
 
     @Override
@@ -162,12 +164,12 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
             if (response.getStatus() != R.Status.Success.getCode()) {
                 LOG.error("Milvus batch insert failed: {}", response.getMessage());
                 throw new RuntimeException("Milvus insert failed: " + response.getMessage());
-            } else {
-                LOG.info("Successfully bulk inserted {} records to Milvus.", size);
-                batchBuffer.clear();
             }
+            batchBuffer.clear();
         } catch (Exception e) {
             LOG.error("Exception during Milvus flush.", e);
+            LOG.error("Milvus flush 致命异常，准备触发重启容错", e);
+            throw e;
         }
     }
 

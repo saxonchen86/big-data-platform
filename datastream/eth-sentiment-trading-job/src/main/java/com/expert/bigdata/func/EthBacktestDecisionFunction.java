@@ -39,7 +39,7 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
     @Override
     public void open(Configuration parameters) {
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
-        milvusHost = params.getOrDefault("milvusHost", "localhost");
+        milvusHost = params.getOrDefault("milvusHost", "milvus-standalone");
         milvusPort = params.getOrDefault("milvusPort", "19530");
 
         // 初始化锁对象
@@ -72,6 +72,7 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
                 }
             }
         }
+        LOG.info("尝试连接 Milvus，目标地址为: {}:{}", milvusHost, milvusPort);
     }
 
     @Override
