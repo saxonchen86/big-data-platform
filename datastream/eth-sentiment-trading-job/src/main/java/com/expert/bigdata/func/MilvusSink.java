@@ -48,7 +48,7 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
         milvusHost = params.getOrDefault("milvusHost", "localhost");
         milvusPort = params.getOrDefault("milvusPort", "19530");
         this.lock = new Object();
-
+        this.collectionName = params.getOrDefault("milvusCollection", "eth_sentiment_analysis");
         LOG.info("📦 MilvusSink 已就绪，连接将在写入第一条数据时建立。");
     }
 
