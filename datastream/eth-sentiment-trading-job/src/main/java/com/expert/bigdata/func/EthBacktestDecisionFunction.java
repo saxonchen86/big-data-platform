@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 基于 Milvus 的特征相似度历史回测与交易决策节点
@@ -32,10 +33,15 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
         String host = params.getOrDefault("milvusHost", params.getOrDefault("milvus.host", "localhost"));
         String portStr = params.getOrDefault("milvusPort", params.getOrDefault("milvus.port", "19530"));
-        milvusClient = new MilvusServiceClient(ConnectParam.newBuilder()
+        ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost(host)
                 .withPort(Integer.parseInt(portStr))
-                .build());
+                .withConnectTimeout(5, TimeUnit.SECONDS) // 必须增加：设置 5 秒连接超时
+//                .withKeepAliveWithoutCalls(true) // 保持长连接活跃
+                .keepAliveWithoutCalls(true)
+                .withKeepAliveTime(10, TimeUnit.SECONDS)
+                .build();
+        milvusClient = new MilvusServiceClient(connectParam);
     }
 
     // 修复 4: 增加 close 方法，防止 Milvus 连接泄漏
