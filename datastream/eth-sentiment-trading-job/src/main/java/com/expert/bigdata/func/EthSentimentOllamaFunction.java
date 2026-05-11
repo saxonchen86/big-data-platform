@@ -31,8 +31,8 @@ public class EthSentimentOllamaFunction extends RichAsyncFunction<String, String
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
         String host = params.getOrDefault("ollamaHost", "localhost");
         String defaultApiUrl = "http://" + host + ":11434/api/generate";
-        
-        apiUrl = params.getOrDefault("ollama.api.url", defaultApiUrl).trim();
+//        http://localhost:11434/api/generate
+        apiUrl = params.getOrDefault("ollamaUrl", defaultApiUrl).trim();
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(5000)
