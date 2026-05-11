@@ -92,6 +92,7 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
         if (batchBuffer.isEmpty()) {
             return;
         }
+        ensureClientInitialized();
 
         int size = batchBuffer.size();
         LOG.debug("Flushing {} records to Milvus...", size);
@@ -149,7 +150,6 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
         fields.add(new InsertParam.Field("win_rate", winRates));
         fields.add(new InsertParam.Field("return", returns));
 
-        ensureClientInitialized();
         try {
             // 一次网络请求，插入一批数据！
             InsertParam insertParam = InsertParam.newBuilder()
@@ -161,14 +161,13 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
 
             if (response.getStatus() != R.Status.Success.getCode()) {
                 LOG.error("Milvus batch insert failed: {}", response.getMessage());
+                throw new RuntimeException("Milvus insert failed: " + response.getMessage());
             } else {
                 LOG.info("Successfully bulk inserted {} records to Milvus.", size);
+                batchBuffer.clear();
             }
         } catch (Exception e) {
             LOG.error("Exception during Milvus flush.", e);
-        } finally {
-            // 无论成功失败，清空缓冲区
-            batchBuffer.clear();
         }
     }
 
