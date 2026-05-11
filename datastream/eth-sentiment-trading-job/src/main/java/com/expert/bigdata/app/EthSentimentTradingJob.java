@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
  * --dbUrl "jdbc:mysql://localhost:3306/streampark"
  * --dbUsername "root"
  * --dbPassword "streampark"
+ * --embeddingUrl "http://localhost:11434/api/embeddings"
  */
 
     /**  生产启动参数
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit;
  --dbUrl "jdbc:mysql://mysql:3306/streampark"
  --dbUsername "root"
  --dbPassword "streampark"
+     --embeddingUrl "http://host.docker.internal:11434/api/embeddings"
  */
 
 /**

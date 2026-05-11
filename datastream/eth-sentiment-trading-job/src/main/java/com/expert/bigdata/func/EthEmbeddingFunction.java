@@ -32,8 +32,9 @@ public class EthEmbeddingFunction extends RichAsyncFunction<String, String> {
     @Override
     public void open(Configuration parameters) {
         // 1. 从全局配置获取 URL
-        embeddingUrl = getRuntimeContext().getExecutionConfig().getGlobalJobParameters()
-                .toMap().getOrDefault("ollama.embedding.url", "http://localhost:11434/api/embeddings");
+        var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
+        embeddingUrl = params.getOrDefault("embeddingUrl", "http://localhost:11434/api/embeddings");
+
 
         // 2. 初始化异步 HTTP 客户端
         RequestConfig requestConfig = RequestConfig.custom()
