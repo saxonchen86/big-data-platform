@@ -129,8 +129,8 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 4
-        taskmanager.memory.process.size: 3072m
+        taskmanager.numberOfTaskSlots: 8
+        taskmanager.memory.process.size: 4096m
     deploy:
       resources:
         limits:

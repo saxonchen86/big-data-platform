@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * --dbPassword "streampark"
  */
 
-/**  生产启动参数
+    /**  生产启动参数
  --kafkaUrl "kafka:29092"
  --sourceTopic "eth_social_stream"
  --sinkTopic "topic_trade_signals"
@@ -63,6 +63,7 @@ public class EthSentimentTradingJob {
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.getConfig().setGlobalJobParameters(params);
+        env.setParallelism(1);
 
         // 引入带退避延迟的重启策略
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(
