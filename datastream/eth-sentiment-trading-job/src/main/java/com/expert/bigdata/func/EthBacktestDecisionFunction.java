@@ -20,37 +20,58 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
+import java.util.concurrent.TimeUnit;
 /**
  * 基于 Milvus 的特征相似度历史回测与交易决策节点
  */
 public class EthBacktestDecisionFunction extends RichAsyncFunction<String, String> {
     private static final Logger LOG = LoggerFactory.getLogger(EthBacktestDecisionFunction.class);
-    private transient MilvusServiceClient milvusClient;
+
+    // 1. 声明为 volatile，保证多线程可见性
+    private transient volatile MilvusServiceClient milvusClient;
+    // 2. 声明一把锁
+    private transient Object lock;
+
+    // 暂存连接参数
+    private String milvusHost;
+    private int milvusPort;
 
     @Override
     public void open(Configuration parameters) {
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
         String host = params.getOrDefault("milvusHost", "localhost");
         String portStr = params.getOrDefault("milvusPort", "19530");
-        ConnectParam connectParam = ConnectParam.newBuilder()
-                .withHost(host)
-                .withPort(Integer.parseInt(portStr))
-                .withConnectTimeout(5, TimeUnit.SECONDS) // 必须增加：设置 5 秒连接超时
-//                .withKeepAliveWithoutCalls(true) // 保持长连接活跃
-                .keepAliveWithoutCalls(true)
-                .withKeepAliveTime(10, TimeUnit.SECONDS)
-                .build();
-        milvusClient = new MilvusServiceClient(connectParam);
-    }
 
-    // 修复 4: 增加 close 方法，防止 Milvus 连接泄漏
-    @Override
-    public void close() throws Exception {
-        if (milvusClient != null) {
-            milvusClient.close();
+        // 初始化锁对象
+        this.lock = new Object();
+
+        LOG.info("🚀 BacktestDecision节点已就绪。Milvus连接将延迟到第一条数据到达时建立 (Host: {})", milvusHost);
+//
+//        ConnectParam connectParam = ConnectParam.newBuilder()
+//                .withHost(host)
+//                .withPort(Integer.parseInt(portStr))
+//                .withConnectTimeout(5, TimeUnit.SECONDS) // 必须增加：设置 5 秒连接超时
+////                .withKeepAliveWithoutCalls(true) // 保持长连接活跃
+//                .keepAliveWithoutCalls(true)
+//                .withKeepAliveTime(10, TimeUnit.SECONDS)
+//                .build();
+//        milvusClient = new MilvusServiceClient(connectParam);
+    }
+    // 提取出一个专门的初始化方法，使用双重检查锁（DCL）
+    private void initMilvusClient() {
+        if (milvusClient == null) {
+            synchronized (lock) {
+                if (milvusClient == null) {
+                    LOG.info("⚡️ 正在建立 Milvus 真实连接...");
+                    milvusClient = new MilvusServiceClient(ConnectParam.newBuilder()
+                            .withHost(milvusHost)
+                            .withPort(milvusPort)
+                            .withConnectTimeout(5, TimeUnit.SECONDS)
+                            .build());
+                    LOG.info("✅ Milvus 连接建立成功！");
+                }
+            }
         }
-        super.close();
     }
 
     @Override
@@ -58,6 +79,7 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
         // 修复 1: 必须使用 CompletableFuture 包装同步的 Milvus 查询，否则 Async I/O 无效
         CompletableFuture.runAsync(() -> {
             try {
+                initMilvusClient();
                 JSONObject node = JSON.parseObject(input);
 
                 // 修复 2: 严格类型转换，强制将 JSON 数组解析为 List<Float>
@@ -144,8 +166,16 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
                 }
             } catch (Exception e) {
                 LOG.error("Milvus 回测决策节点发生异常: ", e);
+                LOG.error("Milvus 回测决策节点发生异常: ", e);
                 resultFuture.complete(Collections.emptyList());
             }
         });
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (milvusClient != null) {
+            milvusClient.close();
+        }
     }
 }
