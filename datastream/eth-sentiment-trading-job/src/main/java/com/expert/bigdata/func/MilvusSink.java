@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 高维记忆持久化 (Milvus Sink 节点) - 高性能微批处理版
@@ -31,36 +32,45 @@ import java.util.List;
 public class MilvusSink extends RichSinkFunction<String> implements CheckpointedFunction {
     private static final Logger LOG = LoggerFactory.getLogger(MilvusSink.class);
 
-    private transient MilvusServiceClient milvusClient;
     private String collectionName;
+    // 1. 改为 volatile，并移除 open 里的初始化逻辑
+    private transient volatile MilvusServiceClient milvusClient;
+    private transient Object lock;
 
-    // 微批处理缓冲区
-    private transient List<JSONObject> batchBuffer;
+    private String milvusHost;
+    private String milvusPort;
+    private final List<JSONObject> batchBuffer = new ArrayList<>();
     private static final int BATCH_SIZE = 1; // 当积累到500条时，打包一次性写入 Milvus
 
     @Override
     public void open(Configuration parameters) throws Exception {
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
-        String host = params.getOrDefault("milvusHost", "localhost");
-        String portStr = params.getOrDefault("milvusPort", "19530");
-        ConnectParam connectParam = ConnectParam.newBuilder()
-                .withHost(host)
-                .withPort(Integer.parseInt(portStr))
-                .withConnectTimeout(5, TimeUnit.SECONDS) // 必须增加：设置 5 秒连接超时
-//                .withKeepAliveWithoutCalls(true) // 保持长连接活跃
-                .keepAliveWithoutCalls(true)
-                .withKeepAliveTime(10, TimeUnit.SECONDS)
-                .build();
-        milvusClient = new MilvusServiceClient(connectParam);
+        milvusHost = params.getOrDefault("milvusHost", "localhost");
+        milvusPort = params.getOrDefault("milvusPort", "19530");
+        this.lock = new Object();
 
-        collectionName = "eth_sentiment_analysis";
-        batchBuffer = new ArrayList<>(BATCH_SIZE);
+        LOG.info("📦 MilvusSink 已就绪，连接将在写入第一条数据时建立。");
+    }
 
-        LOG.info("MilvusSink initialized. Batch size configured to: {}", BATCH_SIZE);
+    private void ensureClientInitialized() {
+        if (milvusClient == null) {
+            synchronized (lock) {
+                if (milvusClient == null) {
+                    LOG.info("⚡️ MilvusSink 正在尝试建立真实连接 (Host: {})", milvusHost);
+                    milvusClient = new MilvusServiceClient(ConnectParam.newBuilder()
+                            .withHost(milvusHost)
+                            .withPort(Integer.parseInt(milvusPort))
+                            .withConnectTimeout(5, TimeUnit.SECONDS)
+                            .build());
+                    LOG.info("✅ MilvusSink 连接成功！");
+                }
+            }
+        }
     }
 
     @Override
     public void invoke(String value, Context context) {
+        ensureClientInitialized();
         try {
             // 1. Fastjson 解析并放入缓冲区，不立即引发网络 IO
             JSONObject node = JSON.parseObject(value);
@@ -139,6 +149,7 @@ public class MilvusSink extends RichSinkFunction<String> implements Checkpointed
         fields.add(new InsertParam.Field("win_rate", winRates));
         fields.add(new InsertParam.Field("return", returns));
 
+        ensureClientInitialized();
         try {
             // 一次网络请求，插入一批数据！
             InsertParam insertParam = InsertParam.newBuilder()

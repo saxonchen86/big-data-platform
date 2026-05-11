@@ -34,13 +34,13 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
 
     // 暂存连接参数
     private String milvusHost;
-    private int milvusPort;
+    private String milvusPort;
 
     @Override
     public void open(Configuration parameters) {
         var params = getRuntimeContext().getExecutionConfig().getGlobalJobParameters().toMap();
-        String host = params.getOrDefault("milvusHost", "localhost");
-        String portStr = params.getOrDefault("milvusPort", "19530");
+        milvusHost = params.getOrDefault("milvusHost", "localhost");
+        milvusPort = params.getOrDefault("milvusPort", "19530");
 
         // 初始化锁对象
         this.lock = new Object();
@@ -65,7 +65,7 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
                     LOG.info("⚡️ 正在建立 Milvus 真实连接...");
                     milvusClient = new MilvusServiceClient(ConnectParam.newBuilder()
                             .withHost(milvusHost)
-                            .withPort(milvusPort)
+                            .withPort(Integer.parseInt(milvusPort))
                             .withConnectTimeout(5, TimeUnit.SECONDS)
                             .build());
                     LOG.info("✅ Milvus 连接建立成功！");
@@ -165,7 +165,6 @@ public class EthBacktestDecisionFunction extends RichAsyncFunction<String, Strin
                     resultFuture.complete(Collections.emptyList());
                 }
             } catch (Exception e) {
-                LOG.error("Milvus 回测决策节点发生异常: ", e);
                 LOG.error("Milvus 回测决策节点发生异常: ", e);
                 resultFuture.complete(Collections.emptyList());
             }
